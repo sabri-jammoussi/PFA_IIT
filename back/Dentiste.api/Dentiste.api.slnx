@@ -1,3 +1,6 @@
 <Solution>
   <Project Path="Dentiste.api/Dentiste.api.csproj" />
+  <Project Path="Dentiste.Core/Dentiste.Core.csproj" />
+  <Project Path="Dentiste.Data/Dentiste.Data.csproj" />
+  <Project Path="Dentiste.Gateway/Dentiste.Gateway.csproj" />
 </Solution>

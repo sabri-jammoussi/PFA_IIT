@@ -1,0 +1,501 @@
+﻿[
+    {
+        "Controller":  "Roles",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/roles",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "3"
+    },
+    {
+        "Controller":  "Roles",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/roles",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":3,\"name\":\"R_530109\",\"description\":\"Role cree pour test integration\"},{\"id\":1,\"name\":\"Role Test 20260607015139\",\"description\":\"Role cree pour test integration\"}],\"totalCount\":2,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Roles",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/roles/3",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":3,\"name\":\"R_530109\",\"description\":\"Role cree pour test integration\"}"
+    },
+    {
+        "Controller":  "Roles",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/roles/3",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Users",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/users",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "Users",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/users",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"username\":\"u_530112\",\"email\":\"u530112@t.com\",\"nom\":\"TestNom\",\"prenom\":\"TestPrenom\",\"isActive\":true,\"createdAt\":\"2026-06-07T00:53:12.0349738\",\"roleId\":3,\"roleName\":\"R_530109 Modifie\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Users",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/users/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"username\":\"u_530112\",\"email\":\"u530112@t.com\",\"nom\":\"TestNom\",\"prenom\":\"TestPrenom\",\"isActive\":true,\"createdAt\":\"2026-06-07T00:53:12.0349738\",\"roleId\":3,\"roleName\":\"R_530109 Modifie\"}"
+    },
+    {
+        "Controller":  "Users",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/users/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Patients",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/patients",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "Patients",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/patients",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"nom\":\"PatientTest\",\"prenom\":\"Jane\",\"dateNaissance\":\"1995-10-24T00:00:00\",\"telephone\":\"0612345678\",\"email\":\"jane.test@example.com\",\"adresse\":\"456 Rue de Test\",\"antecedentsMedicaux\":\"Aucun\",\"groupSanguin\":\"O+\",\"createdAt\":\"2026-06-07T00:53:12.1630971\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Patients",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/patients/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"nom\":\"PatientTest\",\"prenom\":\"Jane\",\"dateNaissance\":\"1995-10-24T00:00:00\",\"telephone\":\"0612345678\",\"email\":\"jane.test@example.com\",\"adresse\":\"456 Rue de Test\",\"antecedentsMedicaux\":\"Aucun\",\"groupSanguin\":\"O+\",\"createdAt\":\"2026-06-07T00:53:12.1630971\"}"
+    },
+    {
+        "Controller":  "Patients",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/patients/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "ActesMedicaux",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/actes-medicaux",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "ActesMedicaux",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/actes-medicaux",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"libelle\":\"Detartrage Test 20260607\",\"tarifDeBase\":45.50,\"codeNomenclature\":\"DT-TEST\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "ActesMedicaux",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/actes-medicaux/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"libelle\":\"Detartrage Test 20260607\",\"tarifDeBase\":45.50,\"codeNomenclature\":\"DT-TEST\"}"
+    },
+    {
+        "Controller":  "ActesMedicaux",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/actes-medicaux/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "RendezVous",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/rendezvous",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "RendezVous",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/rendezvous",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"dateHeure\":\"2026-06-15T09:00:00\",\"dureeEstimee\":\"00:45:00\",\"statut\":\"Planifie\",\"motif\":\"Visite de routine\",\"note\":\"Patient regulier\",\"patientId\":2,\"patientNomComplet\":\"PatientTestMod Jane\",\"dentisteId\":2,\"dentisteNomComplet\":\"TestNomModifie TestPrenom\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "RendezVous",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/rendezvous/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"dateHeure\":\"2026-06-15T09:00:00\",\"dureeEstimee\":\"00:45:00\",\"statut\":\"Planifie\",\"motif\":\"Visite de routine\",\"note\":\"Patient regulier\",\"patientId\":2,\"patientNomComplet\":\"PatientTestMod Jane\",\"dentisteId\":2,\"dentisteNomComplet\":\"TestNomModifie TestPrenom\"}"
+    },
+    {
+        "Controller":  "RendezVous",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/rendezvous/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Consultations",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/consultations",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "Consultations",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/consultations",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"dateConsultation\":\"2026-06-07T10:00:00\",\"notesObservations\":\"Consultation de diagnostic initiale\",\"patientId\":2,\"patientNomComplet\":\"PatientTestMod Jane\",\"dentisteId\":2,\"dentisteNomComplet\":\"TestNomModifie TestPrenom\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Consultations",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/consultations/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"dateConsultation\":\"2026-06-07T10:00:00\",\"notesObservations\":\"Consultation de diagnostic initiale\",\"patientId\":2,\"patientNomComplet\":\"PatientTestMod Jane\",\"dentisteId\":2,\"dentisteNomComplet\":\"TestNomModifie TestPrenom\"}"
+    },
+    {
+        "Controller":  "Consultations",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/consultations/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "SoinsEffectues",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/soins-effectues",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "SoinsEffectues",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/soins-effectues",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"numeroDent\":12,\"faceDentaire\":\"V\",\"prixApplique\":45.50,\"notes\":\"Nettoyage standard\",\"consultationId\":2,\"consultationDate\":\"2026-06-07T10:30:00\",\"acteMedicalId\":2,\"acteMedicalLibelle\":\"Detartrage Test 20260607 Modifie\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "SoinsEffectues",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/soins-effectues/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"numeroDent\":12,\"faceDentaire\":\"V\",\"prixApplique\":45.50,\"notes\":\"Nettoyage standard\",\"consultationId\":2,\"consultationDate\":\"2026-06-07T10:30:00\",\"acteMedicalId\":2,\"acteMedicalLibelle\":\"Detartrage Test 20260607 Modifie\"}"
+    },
+    {
+        "Controller":  "SoinsEffectues",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/soins-effectues/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Ordonnances",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/ordonnances",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "Ordonnances",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/ordonnances",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"dateEmission\":\"2026-06-07T00:00:00\",\"traitement\":\"Antibiotique 500mg - 2 fois par jour\",\"consultationId\":2,\"patientNomComplet\":\"PatientTestMod Jane\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Ordonnances",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/ordonnances/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"dateEmission\":\"2026-06-07T00:00:00\",\"traitement\":\"Antibiotique 500mg - 2 fois par jour\",\"consultationId\":2,\"patientNomComplet\":\"PatientTestMod Jane\"}"
+    },
+    {
+        "Controller":  "Ordonnances",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/ordonnances/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Factures",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/factures",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "2"
+    },
+    {
+        "Controller":  "Factures",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/factures",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":2,\"numeroFacture\":\"F-530112\",\"dateEmission\":\"2026-06-07T00:00:00\",\"montantTotal\":150.00,\"montantPaye\":0.00,\"statutPaiement\":\"NonPaye\",\"patientId\":2,\"patientNomComplet\":\"PatientTestMod Jane\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Factures",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/factures/2",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":2,\"numeroFacture\":\"F-530112\",\"dateEmission\":\"2026-06-07T00:00:00\",\"montantTotal\":150.00,\"montantPaye\":0.00,\"statutPaiement\":\"NonPaye\",\"patientId\":2,\"patientNomComplet\":\"PatientTestMod Jane\"}"
+    },
+    {
+        "Controller":  "Factures",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/factures/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Paiements",
+        "Operation":  "POST (Create)",
+        "Method":  "POST",
+        "Url":  "http://localhost:5094/api/paiements",
+        "Status":  "PASSED",
+        "StatusCode":  201,
+        "Response":  "1"
+    },
+    {
+        "Controller":  "Paiements",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/paiements",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[{\"id\":1,\"datePaiement\":\"2026-06-07T11:00:00\",\"montant\":80.00,\"modePaiement\":\"Especes\",\"factureId\":2,\"factureNumero\":\"F-530112-REV\"}],\"totalCount\":1,\"page\":1,\"pageSize\":10,\"totalPages\":1}"
+    },
+    {
+        "Controller":  "Paiements",
+        "Operation":  "GET By ID",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/paiements/1",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"id\":1,\"datePaiement\":\"2026-06-07T11:00:00\",\"montant\":80.00,\"modePaiement\":\"Especes\",\"factureId\":2,\"factureNumero\":\"F-530112-REV\"}"
+    },
+    {
+        "Controller":  "Paiements",
+        "Operation":  "PUT (Update)",
+        "Method":  "PUT",
+        "Url":  "http://localhost:5094/api/paiements/1",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "AuditLogs",
+        "Operation":  "GET All",
+        "Method":  "GET",
+        "Url":  "http://localhost:5094/api/audit-logs",
+        "Status":  "PASSED",
+        "StatusCode":  200,
+        "Response":  "{\"items\":[],\"totalCount\":0,\"page\":1,\"pageSize\":10,\"totalPages\":0}"
+    },
+    {
+        "Controller":  "Paiements",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/paiements/1",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Factures",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/factures/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Ordonnances",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/ordonnances/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "SoinsEffectues",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/soins-effectues/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Consultations",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/consultations/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "RendezVous",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/rendezvous/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "ActesMedicaux",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/actes-medicaux/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Patients",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/patients/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Users",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/users/2",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    },
+    {
+        "Controller":  "Roles",
+        "Operation":  "DELETE",
+        "Method":  "DELETE",
+        "Url":  "http://localhost:5094/api/roles/3",
+        "Status":  "PASSED",
+        "StatusCode":  204,
+        "Response":  {
+
+                     }
+    }
+]
