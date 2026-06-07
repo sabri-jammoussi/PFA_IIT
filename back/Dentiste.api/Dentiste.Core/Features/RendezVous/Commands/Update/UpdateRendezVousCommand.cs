@@ -1,0 +1,16 @@
+using System;
+using Dentiste.Core.Messaging;
+
+namespace Dentiste.Core.Features.RendezVous.Commands.Update;
+
+public record UpdateRendezVousCommand : ICommand
+{
+    public required int Id { get; init; }
+    public required DateTime DateHeure { get; init; }
+    public required TimeSpan DureeEstimee { get; init; }
+    public required string Statut { get; init; }
+    public string? Motif { get; init; }
+    public string? Note { get; init; }
+    public required int PatientId { get; init; }
+    public required int DentisteId { get; init; }
+}

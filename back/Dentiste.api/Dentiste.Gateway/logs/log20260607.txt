@@ -1,0 +1,2 @@
+[01:49:02 INF][Program] [Dentiste Gateway] v1.0.0+47f8b164d6f5ca0a8d95dedc516b0a0de981fbdc
+[01:49:02 VRB][Program] Running on user interactive mode
