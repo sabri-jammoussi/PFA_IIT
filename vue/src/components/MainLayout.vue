@@ -54,13 +54,19 @@ const menuItems = computed(() => {
       label: 'Facturation & Paiements',
       icon: 'pi pi-wallet',
       routeName: 'billing',
-      roles: ['Admin', 'Secretaire']
+      roles: ['Admin', 'Dentiste', 'Secretaire']
     },
     {
       label: 'Actes Médicaux',
       icon: 'pi pi-book',
       routeName: 'medical-acts',
       roles: ['Admin', 'Dentiste']
+    },
+    {
+      label: 'Configuration Système',
+      icon: 'pi pi-cog',
+      routeName: 'AdminDashboard',
+      roles: ['Admin']
     }
   ]
 

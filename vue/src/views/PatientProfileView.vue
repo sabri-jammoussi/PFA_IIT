@@ -360,6 +360,7 @@ onMounted(() => {
             Schéma Dentaire (FDI)
           </button>
           <button 
+            v-if="authStore.role !== 'Secretaire'"
             @click="activeTab = 'history'"
             class="px-4 py-3.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer"
             :class="[activeTab === 'history' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-400 hover:text-slate-600']"
@@ -367,6 +368,7 @@ onMounted(() => {
             Historique des Soins
           </button>
           <button 
+            v-if="authStore.role !== 'Secretaire'"
             @click="activeTab = 'prescriptions'"
             class="px-4 py-3.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer"
             :class="[activeTab === 'prescriptions' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-400 hover:text-slate-600']"
@@ -501,7 +503,7 @@ onMounted(() => {
           </div>
 
           <!-- Bottom: Selected tooth history or add new soin -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div v-if="authStore.role !== 'Secretaire'" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             
             <!-- Selected Tooth History -->
             <div class="border border-slate-200/60 rounded-xl p-5 bg-slate-50/20">
@@ -615,6 +617,12 @@ onMounted(() => {
               </form>
             </div>
 
+          </div>
+          <div v-else class="p-8 bg-slate-50 border border-slate-200/60 rounded-xl text-center text-xs font-semibold text-slate-500 max-w-lg mx-auto my-6 flex flex-col items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 shadow-inner">
+              <i class="pi pi-lock text-base"></i>
+            </div>
+            <span>En tant que personnel administratif, les détails cliniques confidentiels et la saisie des actes médicaux sont restreints pour des raisons de confidentialité médicale.</span>
           </div>
 
         </div>

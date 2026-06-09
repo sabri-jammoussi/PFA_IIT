@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Dentiste.Data;
 using Dentiste.Core.Features.AuditLogs;
 using Dentiste.Core.Features.AuditLogs.Queries.GetById;
 using Dentiste.Core.Features.AuditLogs.Queries.GetAll;
@@ -9,6 +11,7 @@ namespace Dentiste.api.Controllers;
 
 [ApiController]
 [Route("api/audit-logs")]
+[Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Dentiste)}")]
 public class AuditLogsController : ControllerBase
 {
     private readonly ISender _sender;

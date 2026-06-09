@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Dentiste.Data;
 using Dentiste.Core.Features.Consultations;
 using Dentiste.Core.Features.Consultations.Commands.Add;
 using Dentiste.Core.Features.Consultations.Commands.Update;
@@ -13,6 +15,7 @@ namespace Dentiste.api.Controllers;
 
 [ApiController]
 [Route("api/consultations")]
+[Authorize(Roles = nameof(UserRole.Dentiste))]
 public class ConsultationsController : ControllerBase
 {
     private readonly ISender _sender;

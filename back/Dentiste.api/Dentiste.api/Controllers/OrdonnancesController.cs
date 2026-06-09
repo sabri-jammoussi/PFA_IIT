@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Dentiste.Data;
 using Dentiste.Core.Features.Ordonnances;
 using Dentiste.Core.Features.Ordonnances.Commands.Add;
 using Dentiste.Core.Features.Ordonnances.Commands.Update;
@@ -12,6 +14,7 @@ namespace Dentiste.api.Controllers;
 
 [ApiController]
 [Route("api/ordonnances")]
+[Authorize(Roles = nameof(UserRole.Dentiste))]
 public class OrdonnancesController : ControllerBase
 {
     private readonly ISender _sender;

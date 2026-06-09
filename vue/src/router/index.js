@@ -52,7 +52,7 @@ const routes = [
         path: 'billing',
         name: 'billing',
         component: () => import('@/views/BillingView.vue'),
-        meta: { roles: ['Admin', 'Secretaire'] }
+        meta: { roles: ['Admin', 'Dentiste', 'Secretaire'] }
       },
       {
         path: 'medical-acts',
