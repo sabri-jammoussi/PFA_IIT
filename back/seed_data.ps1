@@ -58,9 +58,9 @@ Write-Host "Starting database seeding with mock data through Gateway ($baseUrl).
 # 1. Seed Roles
 Write-Host "`nSeeding Roles..." -ForegroundColor Yellow
 $rolesToCreate = @(
-    @{ Name = "Administrateur"; Description = "Gestion totale du cabinet dentaire" }
+    @{ Name = "Admin"; Description = "Gestion totale du cabinet dentaire" }
     @{ Name = "Dentiste"; Description = "Praticien effectuant les soins" }
-    @{ Name = "Assistant"; Description = "Accueil et planification des rendez-vous" }
+    @{ Name = "Secretaire"; Description = "Accueil, facturation et planification des rendez-vous" }
 )
 
 $roleIds = @()
@@ -90,19 +90,19 @@ if ($roleIds.Count -eq 0) {
 
 # 2. Seed Users (Dentists, Assistants, Admins)
 Write-Host "`nSeeding Users..." -ForegroundColor Yellow
-$adminRoleId = ($roleIds | Where-Object { $_.Name -eq "Administrateur" } | Select-Object -First 1).Id
+$adminRoleId = ($roleIds | Where-Object { $_.Name -eq "Admin" } | Select-Object -First 1).Id
 $dentistRoleId = ($roleIds | Where-Object { $_.Name -eq "Dentiste" } | Select-Object -First 1).Id
-$assistantRoleId = ($roleIds | Where-Object { $_.Name -eq "Assistant" } | Select-Object -First 1).Id
+$secretaireRoleId = ($roleIds | Where-Object { $_.Name -eq "Secretaire" } | Select-Object -First 1).Id
 
 # In case roles are missing or default
 if ($null -eq $adminRoleId) { $adminRoleId = $roleIds[0].Id }
 if ($null -eq $dentistRoleId) { $dentistRoleId = $roleIds[0].Id }
-if ($null -eq $assistantRoleId) { $assistantRoleId = $roleIds[0].Id }
+if ($null -eq $secretaireRoleId) { $secretaireRoleId = $roleIds[0].Id }
 
 $usersToCreate = @(
     @{ Username = "dr_dupont"; Email = "dupont.dentiste@cabinet.com"; Password = "SecurePassword123!"; Nom = "Dupont"; Prenom = "Jean"; RoleId = $dentistRoleId }
     @{ Username = "dr_leclerc"; Email = "leclerc.dentiste@cabinet.com"; Password = "SecurePassword123!"; Nom = "Leclerc"; Prenom = "Sophie"; RoleId = $dentistRoleId }
-    @{ Username = "assist_valerie"; Email = "valerie.assist@cabinet.com"; Password = "SecurePassword123!"; Nom = "Martin"; Prenom = "Valerie"; RoleId = $assistantRoleId }
+    @{ Username = "assist_valerie"; Email = "valerie.assist@cabinet.com"; Password = "SecurePassword123!"; Nom = "Martin"; Prenom = "Valerie"; RoleId = $secretaireRoleId }
     @{ Username = "admin_med"; Email = "admin.med@cabinet.com"; Password = "SecurePassword123!"; Nom = "Jammoussi"; Prenom = "Sabri"; RoleId = $adminRoleId }
 )
 

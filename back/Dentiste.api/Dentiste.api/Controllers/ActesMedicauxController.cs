@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Dentiste.Data;
 using Dentiste.Core.Features.ActesMedicaux;
 using Dentiste.Core.Features.ActesMedicaux.Commands.Add;
 using Dentiste.Core.Features.ActesMedicaux.Commands.Update;
@@ -12,6 +14,7 @@ namespace Dentiste.api.Controllers;
 
 [ApiController]
 [Route("api/actes-medicaux")]
+[Authorize(Roles = nameof(UserRole.Dentiste))]
 public class ActesMedicauxController : ControllerBase
 {
     private readonly ISender _sender;
@@ -22,6 +25,7 @@ public class ActesMedicauxController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = $"{nameof(UserRole.Dentiste)},{nameof(UserRole.Secretaire)}")]
     public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
     {
         var query = new GetAllActesMedicauxQuery
@@ -39,6 +43,7 @@ public class ActesMedicauxController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Roles = $"{nameof(UserRole.Dentiste)},{nameof(UserRole.Secretaire)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var query = new GetActeMedicalByIdQuery { Id = id };

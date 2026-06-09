@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Dentiste.Data;
 using Dentiste.Core.Features.RendezVous;
 using Dentiste.Core.Features.RendezVous.Commands.Add;
 using Dentiste.Core.Features.RendezVous.Commands.Update;
@@ -13,6 +15,7 @@ namespace Dentiste.api.Controllers;
 
 [ApiController]
 [Route("api/rendezvous")]
+[Authorize(Roles = $"{nameof(UserRole.Dentiste)},{nameof(UserRole.Secretaire)}")]
 public class RendezVousController : ControllerBase
 {
     private readonly ISender _sender;
