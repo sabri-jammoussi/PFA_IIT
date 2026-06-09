@@ -27,3 +27,100 @@ html, body {
   display: flex;
   flex-direction: column;
 }
+
+/* ==========================================================================
+   PrimeVue Select (Dropdown) — unified styling
+   These rules are intentionally UNLAYERED so they win over the `primevue`
+   cssLayer. Width is left to per-instance utilities (w-full / w-48).
+   ========================================================================== */
+
+/* Trigger — match the app's slate text inputs */
+.p-select {
+  background-color: #f8fafc;            /* slate-50 */
+  border: 1px solid #e2e8f0;            /* slate-200 */
+  border-radius: 0.5rem;                /* rounded-lg */
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.p-select:not(.p-disabled):hover {
+  border-color: #cbd5e1;                /* slate-300 */
+}
+.p-select:not(.p-disabled).p-focus {
+  border-color: #0ea5e9;                /* sky-500 */
+  box-shadow: 0 0 0 1px #0ea5e9;        /* ring-1 ring-sky-500 */
+  outline: none;
+}
+.p-select.p-disabled {
+  opacity: 0.6;
+  background-color: #f1f5f9;            /* slate-100 */
+}
+.p-select-label {
+  padding: 0.5rem 0.75rem;              /* py-2 px-3 */
+  font-size: 0.75rem;                   /* text-xs */
+  line-height: 1rem;
+  font-weight: 600;
+  color: #1e293b;                       /* slate-800 */
+}
+.p-select-label.p-placeholder {
+  color: #94a3b8;                       /* slate-400 */
+  font-weight: 500;
+}
+.p-select-dropdown {
+  width: 2rem;
+  color: #94a3b8;                       /* slate-400 */
+}
+
+/* Overlay panel */
+.p-select-overlay {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;            /* slate-200 */
+  border-radius: 0.75rem;               /* rounded-xl */
+  box-shadow: 0 10px 25px -5px rgb(15 23 42 / 0.15);
+  overflow: hidden;
+}
+
+/* Filter header / search box */
+.p-select-header {
+  padding: 0.5rem;
+  background: #f8fafc;                  /* slate-50 */
+  border-bottom: 1px solid #f1f5f9;     /* slate-100 */
+}
+.p-select-header .p-inputtext {
+  width: 100%;
+  font-size: 0.75rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;            /* slate-200 */
+  background: #ffffff;
+  color: #1e293b;
+}
+.p-select-header .p-inputtext:focus {
+  border-color: #0ea5e9;                /* sky-500 */
+  box-shadow: 0 0 0 1px #0ea5e9;
+  outline: none;
+}
+
+/* Options */
+.p-select-option {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;                       /* slate-700 */
+  padding: 0.5rem 0.75rem;
+  margin: 0.125rem 0.25rem;
+  border-radius: 0.5rem;
+}
+.p-select-option:not(.p-select-option-selected):not(.p-disabled).p-focus {
+  background: #f1f5f9;                  /* slate-100 */
+  color: #0f172a;                       /* slate-900 */
+}
+.p-select-option.p-select-option-selected {
+  background: #ecfdf5;                  /* emerald-50 — matches screenshot */
+  color: #047857;                       /* emerald-700 */
+}
+.p-select-option.p-select-option-selected.p-focus {
+  background: #d1fae5;                  /* emerald-100 */
+}
+.p-select-empty-message {
+  font-size: 0.75rem;
+  color: #94a3b8;                       /* slate-400 */
+  padding: 0.75rem;
+}

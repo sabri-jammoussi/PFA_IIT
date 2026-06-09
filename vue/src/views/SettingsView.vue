@@ -209,14 +209,14 @@ onMounted(() => {
                 <h4 class="text-xs font-bold text-slate-800">Thème Visuel</h4>
                 <p class="text-[10px] text-slate-400 mt-0.5">Ajuste l'apparence générale de votre interface.</p>
               </div>
-              <select 
+              <Dropdown
                 v-model="theme"
-                class="py-2 px-3 text-xs bg-slate-50 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-lg outline-none text-slate-800"
-              >
-                <option value="Light">Thème Clair (Stérile)</option>
-                <option value="Dark">Thème Sombre (Nuit)</option>
-                <option value="Glass">Givré (Glassmorphism)</option>
-              </select>
+                :options="themeOptions"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                class="w-56 text-xs"
+              />
             </div>
 
             <!-- Language selection -->
@@ -225,14 +225,14 @@ onMounted(() => {
                 <h4 class="text-xs font-bold text-slate-800">Langue de l'Application</h4>
                 <p class="text-[10px] text-slate-400 mt-0.5">Traductions des menus, fiches patients et diagnostics.</p>
               </div>
-              <select 
+              <Dropdown
                 v-model="language"
-                class="py-2 px-3 text-xs bg-slate-50 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-lg outline-none text-slate-800"
-              >
-                <option value="Français">Français</option>
-                <option value="English">English</option>
-                <option value="العربية">العربية</option>
-              </select>
+                :options="languageOptions"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                class="w-56 text-xs"
+              />
             </div>
 
             <!-- Notification options -->

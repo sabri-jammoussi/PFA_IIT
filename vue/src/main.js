@@ -29,6 +29,9 @@ app.use(PrimeVue, {
   theme: {
     preset: Aura,
     options: {
+      // Never auto-switch to dark: '.app-dark' is never applied, so PrimeVue
+      // overlays (Select panels, etc.) always render light to match the app.
+      darkModeSelector: '.app-dark',
       cssLayer: {
         name: 'primevue',
         order: 'tailwind-base, primevue, tailwind-utilities'
