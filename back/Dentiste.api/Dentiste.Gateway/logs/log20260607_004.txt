@@ -1,0 +1,21 @@
+[14:24:17 INF][Yarp.ReverseProxy.Configuration.ConfigProvider.ConfigurationConfigProvider] Loading proxy data from config.
+[14:24:17 DBG][Yarp.ReverseProxy.Management.ProxyConfigManager] Destination 'destination1' has been added.
+[14:24:17 DBG][Yarp.ReverseProxy.Forwarder.ForwarderHttpClientFactory] New client created for cluster 'dentiste-api-cluster'.
+[14:24:17 DBG][Yarp.ReverseProxy.Management.ProxyConfigManager] Cluster 'dentiste-api-cluster' has been added.
+[14:24:17 DBG][Yarp.ReverseProxy.Management.ProxyConfigManager] Route 'api-route' has been added.
+[14:24:17 DBG][Yarp.ReverseProxy.Management.ProxyConfigManager] Route 'front-route' has been added.
+[14:24:18 WRN][Microsoft.AspNetCore.Server.Kestrel] Overriding address(es) 'http://0.0.0.0:5094'. Binding to endpoints defined via IConfiguration and/or UseKestrel() instead.
+[14:24:18 INF][Microsoft.Hosting.Lifetime] Now listening on: http://0.0.0.0:5094
+[14:24:18 FTL][Microsoft.AspNetCore.Hosting.Diagnostics] Hosting startup assembly exception
+System.InvalidOperationException: Startup assembly Dentiste Gateway failed to execute. See the inner exception for more details.
+ ---> System.IO.FileNotFoundException: Could not load file or assembly 'Dentiste Gateway, Culture=neutral, PublicKeyToken=null'. Le fichier spécifié est introuvable.
+File name: 'Dentiste Gateway, Culture=neutral, PublicKeyToken=null'
+   at System.Reflection.RuntimeAssembly.InternalLoad(AssemblyName assemblyName, StackCrawlMark& stackMark, AssemblyLoadContext assemblyLoadContext, RuntimeAssembly requestingAssembly, Boolean throwOnFileNotFound)
+   at System.Reflection.Assembly.Load(AssemblyName assemblyRef)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostBuilder.ExecuteHostingStartups()
+   --- End of inner exception stack trace ---
+[14:24:18 INF][Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
+[14:24:18 INF][Microsoft.Hosting.Lifetime] Hosting environment: Development
+[14:24:18 INF][Microsoft.Hosting.Lifetime] Content root path: D:\PFA_IIT\back\Dentiste.api\Dentiste.Gateway
+[14:24:45 INF][Program] [Dentiste Gateway] v1.0.0+da7df7fc48b0e78b1bba0ec73e80d46989858047
+[14:24:46 VRB][Program] Running on user interactive mode

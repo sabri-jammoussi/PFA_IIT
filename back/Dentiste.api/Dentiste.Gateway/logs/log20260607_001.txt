@@ -269,3 +269,5 @@ File name: 'Dentiste Gateway, Culture=neutral, PublicKeyToken=null'
 [01:55:09 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 201.
 [01:55:09 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/paiements HTTP/2 RequestVersionOrLower 
 [01:55:09 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 201.
+[13:55:01 INF][Program] [Dentiste Gateway] v1.0.0+da7df7fc48b0e78b1bba0ec73e80d46989858047
+[13:55:01 VRB][Program] Running on user interactive mode

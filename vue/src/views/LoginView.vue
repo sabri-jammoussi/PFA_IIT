@@ -1,0 +1,276 @@
+<script setup>
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useToast } from 'primevue/usetoast'
+
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const toast = useToast()
+
+const username = ref('')
+const password = ref('')
+const loginError = ref('')
+
+const handleLogin = async () => {
+  if (!username.value || !password.value) {
+    loginError.value = "Veuillez remplir tous les champs."
+    toast.add({
+      severity: 'warn',
+      summary: 'Champs requis',
+      detail: 'Le nom d\'utilisateur et le mot de passe sont obligatoires.',
+      life: 3000
+    })
+    return
+  }
+
+  loginError.value = ''
+  
+  const result = await authStore.login(username.value, password.value)
+  
+  if (result.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Connexion réussie',
+      detail: `Bienvenue, ${authStore.fullName}`,
+      life: 3000
+    })
+    
+    // Redirect to the path they tried to access, or dashboard
+    const redirectPath = route.query.redirect || '/'
+    router.push(redirectPath)
+  } else {
+    loginError.value = result.error
+    toast.add({
+      severity: 'error',
+      summary: 'Échec de connexion',
+      detail: result.error,
+      life: 4000
+    })
+  }
+}
+</script>
+
+<template>
+  <div class="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 select-none overflow-hidden font-sans">
+    
+    <!-- LEFT PANEL: Hero Area (60% width) -->
+    <div class="relative hidden md:flex md:w-3/5 bg-slate-900 flex-col justify-between p-12 lg:p-20 text-white overflow-hidden">
+      <!-- Ambient Gradient Backdrop -->
+      <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-sky-950/40 z-0"></div>
+      
+      <!-- Subtle Decorative Grid Pattern -->
+      <div class="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px] z-0"></div>
+      
+      <!-- Abstract Tech Light Glow -->
+      <div class="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-sky-500/10 blur-[120px] pointer-events-none z-0"></div>
+      <div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none z-0"></div>
+
+      <!-- Header: Logo & Name -->
+      <div class="relative z-10 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/30">
+          <i class="pi pi-shield text-xl text-slate-950 font-bold"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold tracking-wider uppercase font-sans">DentiFlow</h2>
+          <p class="text-[10px] text-sky-400 tracking-widest font-semibold uppercase">Workspace Clinique</p>
+        </div>
+      </div>
+
+      <!-- Center: Main Copy & Graphic -->
+      <div class="relative z-10 my-auto py-12 max-w-xl">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 text-xs font-semibold border border-sky-500/20 mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+          Version Enterprise 4.0
+        </span>
+        <h1 class="text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight font-sans">
+          La gestion clinique dentaire réinventée.
+        </h1>
+        <p class="text-slate-400 text-base mt-4 font-normal leading-relaxed">
+          Un écosystème hautement sécurisé conçu pour les cabinets modernes, unifiant planification avancée, imagerie clinique et facturation.
+        </p>
+
+        <!-- Feature List -->
+        <div class="mt-8 space-y-4">
+          <div class="flex items-start gap-3">
+            <span class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mt-0.5">
+              <i class="pi pi-check text-[10px] font-bold"></i>
+            </span>
+            <div>
+              <h4 class="text-sm font-semibold text-slate-200">Dossier Médical Unique & FDI Schema</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Suivi en temps réel de la dentition et historique clinique complet.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mt-0.5">
+              <i class="pi pi-clock text-[10px] font-bold"></i>
+            </span>
+            <div>
+              <h4 class="text-sm font-semibold text-slate-200">Planification Intelligente</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Grille d'agenda interactive avec alertes automatisées de rappel par SMS/Email.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mt-0.5">
+              <i class="pi pi-lock text-[10px] font-bold"></i>
+            </span>
+            <div>
+              <h4 class="text-sm font-semibold text-slate-200">Conformité de Données Médicales</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Chiffrement de bout en bout et hébergement agréé données de santé.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="relative z-10 flex items-center justify-between text-xs text-slate-500 border-t border-slate-800/60 pt-6">
+        <p>&copy; 2026 Cabinet Dentaire intelligent</p>
+        <div class="flex items-center gap-3">
+          <a href="#" class="hover:text-slate-300 transition-colors">Politique de sécurité</a>
+          <span>&bull;</span>
+          <a href="#" class="hover:text-slate-300 transition-colors">Support</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Auth Card Form (40% width) -->
+    <div class="flex-1 flex flex-col justify-center items-center px-6 py-12 md:p-12 lg:p-24 bg-slate-50 relative">
+      <!-- Background Ambient Details for Mobile/Tablet -->
+      <div class="md:hidden absolute top-[10%] left-[10%] w-[200px] h-[200px] rounded-full bg-sky-500/5 blur-[50px] pointer-events-none"></div>
+
+      <!-- Main Login Container (Soft Entrance Animation) -->
+      <div class="w-full max-w-md bg-white border border-slate-200/60 shadow-xl rounded-2xl p-8 transition-all duration-300 relative z-10">
+        
+        <!-- Clinic Branding for Mobile Header -->
+        <div class="flex md:hidden items-center justify-center gap-2 mb-6">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
+            <i class="pi pi-shield text-base"></i>
+          </div>
+          <span class="text-lg font-bold text-slate-900 tracking-tight">DentiFlow</span>
+        </div>
+
+        <!-- Section Title -->
+        <div class="text-center md:text-left mb-6">
+          <h2 class="text-2xl font-bold text-slate-900 tracking-tight font-sans">Espace Sécurisé</h2>
+          <p class="text-slate-500 text-xs mt-1.5 font-medium">Connectez-vous pour gérer votre clinique dentaire.</p>
+        </div>
+
+        <!-- Error Alert (Low vibrancy muted red state) -->
+        <div 
+          v-if="loginError" 
+          class="mb-5 p-3.5 bg-rose-50 border border-rose-200/60 rounded-xl flex items-start gap-2.5 text-rose-700 animate-shake"
+        >
+          <i class="pi pi-exclamation-circle text-base mt-0.5"></i>
+          <div class="text-xs font-semibold leading-relaxed">
+            {{ loginError }}
+          </div>
+        </div>
+
+        <!-- Forms Form -->
+        <form @submit.prevent="handleLogin" class="space-y-5">
+          <!-- Input Username -->
+          <div class="space-y-1.5">
+            <label for="username" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Nom d'utilisateur</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="pi pi-user text-sm"></i>
+              </span>
+              <PInputText 
+                id="username"
+                v-model="username" 
+                type="text" 
+                placeholder="Ex: dr.martin" 
+                class="w-full"
+                inputClass="w-full py-3.5 pl-10 pr-4 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl transition-all duration-200 text-slate-800 text-sm outline-none bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium"
+              />
+            </div>
+          </div>
+
+          <!-- Input Password -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center">
+              <label for="password" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Mot de passe</label>
+              <a href="#" class="text-xs text-sky-600 hover:text-sky-700 font-semibold transition-colors">Mot de passe oublié ?</a>
+            </div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 z-10">
+                <i class="pi pi-lock text-sm"></i>
+              </span>
+              <PPassword 
+                id="password"
+                v-model="password" 
+                :feedback="false"
+                toggleMask
+                placeholder="Saisissez votre mot de passe" 
+                class="w-full"
+                inputClass="w-full py-3.5 pl-10 pr-10 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl transition-all duration-200 text-slate-800 text-sm outline-none bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium"
+              />
+            </div>
+          </div>
+
+          <!-- Stay Logged In Checkbox -->
+          <div class="flex items-center">
+            <input 
+              id="remember_me" 
+              name="remember_me" 
+              type="checkbox" 
+              class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded cursor-pointer"
+            />
+            <label for="remember_me" class="ml-2 block text-xs text-slate-500 font-semibold cursor-pointer">
+              Maintenir ma session active
+            </label>
+          </div>
+
+          <!-- Submit Button (Glacier Blue Accent) -->
+          <PButton 
+            type="submit" 
+            :loading="authStore.loading" 
+            class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-md shadow-slate-900/10 hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer border-none"
+          >
+            <i v-if="!authStore.loading" class="pi pi-sign-in"></i>
+            <span>Se connecter</span>
+          </PButton>
+        </form>
+      </div>
+
+      <!-- Technical Compliance Badges (Sterile Clinic Aesthetics) -->
+      <div class="mt-8 flex flex-wrap justify-center gap-4 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
+        <span class="flex items-center gap-1">
+          <i class="pi pi-verified text-emerald-500"></i>
+          RGPD Compliant
+        </span>
+        <span class="text-slate-300">&bull;</span>
+        <span class="flex items-center gap-1">
+          <i class="pi pi-lock text-sky-500"></i>
+          SSL 256-bit
+        </span>
+        <span class="text-slate-300">&bull;</span>
+        <span class="flex items-center gap-1">
+          <i class="pi pi-server text-indigo-500"></i>
+          Hébergement HDS
+        </span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+/* Smooth slide and shake keyframes for low candidacy error events */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Custom override to style the internal primevue password wrapper structure cleanly */
+.p-password {
+  display: block !important;
+}
+.p-password-input {
+  width: 100% !important;
+}
+</style>
