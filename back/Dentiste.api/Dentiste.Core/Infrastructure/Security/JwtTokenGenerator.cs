@@ -38,7 +38,10 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Role, user.Role?.Name ?? "Unknown"),
             new("id", user.Id.ToString()),
-            new("name", $"{user.Prenom} {user.Nom}")
+            new("name", $"{user.Prenom} {user.Nom}"),
+            new("email", user.Email),
+            new("nom", user.Nom),
+            new("prenom", user.Prenom)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor

@@ -69,6 +69,8 @@ namespace Dentiste.api
 			// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 			builder.Services.AddOpenApi();
 
+			builder.Services.AddCors();
+
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -78,6 +80,11 @@ namespace Dentiste.api
 			}
 
 			app.UseHttpsRedirection();
+
+			app.UseCors(policy => policy
+				.AllowAnyOrigin()
+				.AllowAnyHeader()
+				.AllowAnyMethod());
 
 			// ── Auth pipeline (order matters!) ──
 			app.UseAuthentication();

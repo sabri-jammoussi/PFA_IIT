@@ -9,4 +9,5 @@ public record GetAllSoinsEffectuesQuery : IQuery<PagedResult<SoinEffectueDto>>
     public int PageSize { get; init; } = 10;
     public int? ConsultationId { get; init; }
     public int? ActeMedicalId { get; init; }
+    public int? PatientId { get; init; }
 }

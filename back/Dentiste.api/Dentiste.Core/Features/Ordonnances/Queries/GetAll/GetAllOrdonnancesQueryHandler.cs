@@ -27,6 +27,11 @@ public class GetAllOrdonnancesQueryHandler : IQueryHandler<GetAllOrdonnancesQuer
             query = query.Where(o => o.ConsultationId == request.ConsultationId.Value);
         }
 
+        if (request.PatientId.HasValue)
+        {
+            query = query.Where(o => o.Consultation.PatientId == request.PatientId.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var search = request.SearchTerm.Trim().ToLower();

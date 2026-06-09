@@ -26,14 +26,16 @@ public class OrdonnancesController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? consultationId = null,
-        [FromQuery] string? search = null)
+        [FromQuery] string? search = null,
+        [FromQuery] int? patientId = null)
     {
         var query = new GetAllOrdonnancesQuery
         {
             Page = page,
             PageSize = pageSize,
             ConsultationId = consultationId,
-            SearchTerm = search
+            SearchTerm = search,
+            PatientId = patientId
         };
         var result = await _sender.Send(query);
         if (result.IsSuccess)

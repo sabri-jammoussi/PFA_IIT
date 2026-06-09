@@ -32,6 +32,11 @@ public class GetAllSoinsEffectuesQueryHandler : IQueryHandler<GetAllSoinsEffectu
             query = query.Where(s => s.ActeMedicalId == request.ActeMedicalId.Value);
         }
 
+        if (request.PatientId.HasValue)
+        {
+            query = query.Where(s => s.Consultation.PatientId == request.PatientId.Value);
+        }
+
         var totalCount = await query.CountAsync(cancellationToken);
         
         var page = request.Page <= 0 ? 1 : request.Page;

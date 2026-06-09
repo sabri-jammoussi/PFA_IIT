@@ -26,14 +26,16 @@ public class SoinsEffectuesController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? consultationId = null,
-        [FromQuery] int? acteMedicalId = null)
+        [FromQuery] int? acteMedicalId = null,
+        [FromQuery] int? patientId = null)
     {
         var query = new GetAllSoinsEffectuesQuery
         {
             Page = page,
             PageSize = pageSize,
             ConsultationId = consultationId,
-            ActeMedicalId = acteMedicalId
+            ActeMedicalId = acteMedicalId,
+            PatientId = patientId
         };
         var result = await _sender.Send(query);
         if (result.IsSuccess)

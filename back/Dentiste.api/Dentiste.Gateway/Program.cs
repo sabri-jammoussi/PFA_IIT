@@ -10,7 +10,7 @@ var name = "Dentiste Gateway";
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    ApplicationName = name
+    ApplicationName = "Dentiste.Gateway"
 });
 
 // initialize logger
@@ -38,6 +38,8 @@ else
 // Add services to the container.
 builder.Services.AddSerilog(config => config.ReadFrom.Configuration(builder.Configuration));
 
+builder.Services.AddCors();
+
 builder.Services.AddHealthChecks()
     .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 300, name: "memory", tags: ["system", "memory"]);
 
@@ -48,6 +50,11 @@ builder.Services.AddReverseProxy()
     .LoadFromMemory(Array.Empty<RouteConfig>(), initialClusters);
 
 var app = builder.Build();
+
+app.UseCors(policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    .AllowAnyMethod());
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {

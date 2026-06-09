@@ -27,10 +27,10 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        // Find user by username (include Role for claims)
+        // Find user by username or email (include Role for claims)
         var user = await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username, cancellationToken);
 
         if (user == null)
         {
@@ -52,19 +52,6 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
         // Generate JWT (this also registers the session in Redis)
         var token = await _jwtTokenGenerator.CreateToken(user);
 
-        var userDto = new UserDto
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            Nom = user.Nom,
-            Prenom = user.Prenom,
-            IsActive = user.IsActive,
-            CreatedAt = user.CreatedAt,
-            RoleId = user.RoleId,
-            RoleName = user.Role?.Name
-        };
-
-        return Result.Success(new LoginResponse(token, userDto));
+        return Result.Success(new LoginResponse(token));
     }
 }
