@@ -9,3 +9,93 @@
 [16:21:30 INF][Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
 [16:21:30 INF][Microsoft.Hosting.Lifetime] Hosting environment: Development
 [16:21:30 INF][Microsoft.Hosting.Lifetime] Content root path: D:\PFA_IIT\back\Dentiste.api\Dentiste.Gateway
+[16:22:59 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients?page=1&pageSize=10 HTTP/2 RequestVersionOrLower 
+[16:22:59 DBG][Yarp.ReverseProxy.Forwarder.HttpForwarder] "RequestCanceled": The request was canceled before receiving a response.
+System.Threading.Tasks.TaskCanceledException: The operation was canceled.
+ ---> System.IO.IOException: Unable to read data from the transport connection: L’opération d’entrée/sortie a été abandonnée en raison de l’arrêt d’un thread ou à la demande d’une application..
+ ---> System.Net.Sockets.SocketException (995): L’opération d’entrée/sortie a été abandonnée en raison de l’arrêt d’un thread ou à la demande d’une application.
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+   at Yarp.ReverseProxy.Forwarder.HttpForwarder.SendAsync(HttpContext context, String destinationPrefix, HttpMessageInvoker httpClient, ForwarderRequestConfig requestConfig, HttpTransformer transformer, CancellationToken cancellationToken)
+[16:23:00 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients?page=1&pageSize=10 HTTP/2 RequestVersionOrLower 
+[16:23:02 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:23:32 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients HTTP/2 RequestVersionOrLower 
+[16:23:32 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 201.
+[16:23:32 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients?page=1&pageSize=10 HTTP/2 RequestVersionOrLower 
+[16:23:32 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:23:41 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients/10 HTTP/2 RequestVersionOrLower 
+[16:23:41 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:23:41 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/actes-medicaux HTTP/2 RequestVersionOrLower 
+[16:23:41 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:23:41 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/soins-effectues?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:23:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:23:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/consultations?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:23:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:23:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/ordonnances?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:23:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/consultations HTTP/2 RequestVersionOrLower 
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 201.
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/soins-effectues HTTP/2 RequestVersionOrLower 
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 201.
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients/10 HTTP/2 RequestVersionOrLower 
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/actes-medicaux HTTP/2 RequestVersionOrLower 
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:07 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/soins-effectues?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:24:08 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:08 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/consultations?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:24:08 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:08 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/ordonnances?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:24:08 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:22 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients?page=1&pageSize=10 HTTP/2 RequestVersionOrLower 
+[16:24:22 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:43 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/users/5 HTTP/2 RequestVersionOrLower 
+[16:24:43 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:53 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/rendezvous?startDate=2026-06-07T00:00:00Z&endDate=2026-06-07T23:59:59Z&dentisteId=1 HTTP/2 RequestVersionOrLower 
+[16:24:54 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:54 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients HTTP/2 RequestVersionOrLower 
+[16:24:54 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:54 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients?page=1&pageSize=10 HTTP/2 RequestVersionOrLower 
+[16:24:54 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:24:55 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/factures HTTP/2 RequestVersionOrLower 
+[16:24:55 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:28:30 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/factures HTTP/2 RequestVersionOrLower 
+[16:28:30 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:28:49 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/rendezvous?startDate=2026-06-07T00:00:00Z&endDate=2026-06-07T23:59:59Z&dentisteId=1 HTTP/2 RequestVersionOrLower 
+[16:28:49 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:28:49 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients HTTP/2 RequestVersionOrLower 
+[16:28:49 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:29:30 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/rendezvous?startDate=2026-06-07T00:00:00Z&endDate=2026-06-07T23:59:59Z&dentisteId=1 HTTP/2 RequestVersionOrLower 
+[16:29:30 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:29:30 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients HTTP/2 RequestVersionOrLower 
+[16:29:30 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:31:38 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/users/5 HTTP/2 RequestVersionOrLower 
+[16:31:39 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:31:40 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/users/5 HTTP/2 RequestVersionOrLower 
+[16:31:40 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:31:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/users/5 HTTP/2 RequestVersionOrLower 
+[16:31:42 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:31:52 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/rendezvous?startDate=2026-06-07T00:00:00Z&endDate=2026-06-07T23:59:59Z&dentisteId=1 HTTP/2 RequestVersionOrLower 
+[16:31:52 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:31:52 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients HTTP/2 RequestVersionOrLower 
+[16:31:52 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:31:55 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients?page=1&pageSize=10 HTTP/2 RequestVersionOrLower 
+[16:31:55 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/patients/10 HTTP/2 RequestVersionOrLower 
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/actes-medicaux HTTP/2 RequestVersionOrLower 
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/soins-effectues?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/consultations?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Proxying to http://localhost:5295/api/ordonnances?patientId=10&pageSize=100 HTTP/2 RequestVersionOrLower 
+[16:33:20 INF][Yarp.ReverseProxy.Forwarder.HttpForwarder] Received HTTP/1.1 response 200.
