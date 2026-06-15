@@ -37,4 +37,10 @@ public class FactureDao
     public PatientDao Patient { get; set; } = null!;
 
     public ICollection<PaiementDao> Paiements { get; set; } = new List<PaiementDao>();
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("FAC_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

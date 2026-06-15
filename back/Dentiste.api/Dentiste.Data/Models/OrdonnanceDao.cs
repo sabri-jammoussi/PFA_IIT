@@ -23,4 +23,10 @@ public class OrdonnanceDao
     [Column("ORD_CONSULTATION_ID")]
     public int ConsultationId { get; set; }
     public ConsultationDao Consultation { get; set; } = null!;
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("ORD_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

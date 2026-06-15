@@ -13,4 +13,6 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
     public int RoleId { get; set; }
     public string? RoleName { get; set; }
+    public int? CabinetId { get; set; }
+    public string? CabinetName { get; set; }
 }

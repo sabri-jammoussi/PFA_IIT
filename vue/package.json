@@ -13,6 +13,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "@primeuix/themes": "^2.0.3",
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.17.0",

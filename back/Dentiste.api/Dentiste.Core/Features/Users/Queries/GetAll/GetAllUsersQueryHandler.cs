@@ -52,7 +52,9 @@ public class GetAllUsersQueryHandler : IQueryHandler<GetAllUsersQuery, PagedResu
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
                 RoleId = u.RoleId,
-                RoleName = u.Role.Name
+                RoleName = u.Role.Name,
+                CabinetId = u.CabinetId,
+                CabinetName = u.Cabinet != null ? u.Cabinet.NomCabinet : null
             })
             .ToListAsync(cancellationToken);
 

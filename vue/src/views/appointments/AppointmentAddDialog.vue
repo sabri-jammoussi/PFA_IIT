@@ -51,13 +51,20 @@ const durationOptions = [
   { value: '01:00:00', label: '1 heure' }
 ]
 
+const statusOptions = [
+  { value: 'Planifie', label: 'Planifié' },
+  { value: 'Annule', label: 'Annulé' },
+  { value: 'Complete', label: 'Terminé' }
+]
+
 const form = ref({
   patientId: null,
   dateHeure: '',
   dureeEstimee: '00:30:00',
   motif: '',
   note: '',
-  dentisteId: 1
+  dentisteId: 1,
+  statut: 'Planifie'
 })
 
 // Initialize form when dialog becomes visible or default settings change
@@ -69,7 +76,8 @@ watch(() => props.visible, (newVal) => {
       dureeEstimee: '00:30:00',
       motif: '',
       note: '',
-      dentisteId: props.defaultDentistId
+      dentisteId: props.defaultDentistId,
+      statut: 'Planifie'
     }
   }
 }, { immediate: true })
@@ -155,6 +163,19 @@ const handleClose = () => {
               class="w-full text-xs"
             />
           </div>
+        </div>
+
+        <!-- Statut -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Statut du Rendez-vous *</label>
+          <Dropdown 
+            v-model="form.statut"
+            :options="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sélectionner le statut"
+            class="w-full text-xs font-semibold"
+          />
         </div>
 
         <!-- Motif -->

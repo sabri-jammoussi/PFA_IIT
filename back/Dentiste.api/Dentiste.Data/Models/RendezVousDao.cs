@@ -38,4 +38,10 @@ public class RendezVousDao
     [Column("RDV_DENTISTE_ID")]
     public int DentisteId { get; set; }
     public UserDao Dentiste { get; set; } = null!; // L'utilisateur ayant le rôle Dentiste
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("RDV_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

@@ -35,6 +35,12 @@ api.interceptors.response.use(
         router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })
       }
     }
+    if (error.response && error.response.status === 402) {
+      // Redirect to subscription-expired if not already there
+      if (router.currentRoute.value.path !== '/subscription-expired') {
+        router.push({ name: 'SubscriptionExpired' })
+      }
+    }
     return Promise.reject(error)
   }
 )

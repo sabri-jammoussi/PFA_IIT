@@ -31,4 +31,10 @@ public class ConsultationDao
     // Les soins précis prodigués lors de cette séance
     public ICollection<SoinEffectueDao> SoinsEffectues { get; set; } = new List<SoinEffectueDao>();
     public OrdonnanceDao? Ordonnance { get; set; }
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("CON_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

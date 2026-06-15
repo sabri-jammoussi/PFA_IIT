@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
-import api from '@/services/api'
-import AppointmentAddDialog from './AppointmentAddDialog.vue'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import api from '@/services/api'
+import { useToast } from 'primevue/usetoast'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import AppointmentAddDialog from './AppointmentAddDialog.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -12,10 +12,7 @@ const toast = useToast()
 const loading = ref(false)
 const appointments = ref([])
 const patients = ref([])
-const dentists = ref([
-  { id: 1, nom: "Martin", prenom: "Jean", spec: "Chirurgien-Dentiste" },
-  { id: 2, nom: "Karray", prenom: "Selim", spec: "Orthodontiste" }
-])
+const dentists = ref([])
 const dentistOptions = computed(() => dentists.value.map(d => ({
   id: d.id,
   label: `Dr. ${d.prenom} ${d.nom} (${d.spec})`
@@ -23,6 +20,32 @@ const dentistOptions = computed(() => dentists.value.map(d => ({
 
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 const selectedDentist = ref(1) // Doctor Martin by default
+
+const fetchDentists = async () => {
+  try {
+    const res = await api.get('/users/dentists')
+    console.log("dataaaaaaaaaaaaaaa dentiste",res)
+    const items = res.data || []
+    dentists.value = items.map(u => ({
+      id: u.id,
+      nom: u.nom,
+      prenom: u.prenom,
+      spec: u.roleName === 'Dentiste' ? 'Chirurgien-Dentiste' : u.roleName
+    }))
+    // Set default selected dentist to the first one in the list if the current selection is invalid
+    if (dentists.value.length > 0 && !dentists.value.some(d => d.id === selectedDentist.value)) {
+      selectedDentist.value = dentists.value[0].id
+    }
+  } catch (error) {
+    console.error("Failed to fetch dentists from database:", error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de récupérer la liste des praticiens.',
+      life: 4000
+    })
+  }
+}
 
 const showAddDialog = ref(false)
 const savingApp = ref(false)
@@ -33,8 +56,9 @@ const showCancelConfirmation = ref(false)
 const appointmentIdToCancel = ref(null)
 
 const timeSlots = [
-  '08:00', '09:00', '10:00', '11:00', '12:00', 
-  '14:00', '15:00', '16:00', '17:00'
+  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', 
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', 
+  '16:00', '16:30', '17:00', '17:30'
 ]
 
 // Fetch data
@@ -63,78 +87,46 @@ const fetchData = async () => {
     console.log(`[API Response] GET /patients | Status: ${patientsRes.status}`, patientsRes.data)
     patients.value = patientsRes.data?.items || patientsRes.data || []
   } catch (error) {
-    console.warn("[API Error] fetchData failed, falling back to mockups:", error)
-    loadMockData()
+    console.error('[API Error] fetchData failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de chargement',
+      detail: 'Impossible de charger le planning. Vérifiez la connexion au serveur.',
+      life: 5000
+    })
   } finally {
     loading.value = false
   }
 }
 
-const loadMockData = () => {
-  const d = selectedDate.value
-  
-  appointments.value = [
-    {
-      id: 301,
-      dateHeure: `${d}T09:00:00`,
-      dureeEstimee: "00:45:00",
-      statut: "Terminé",
-      motif: "Détartrage & Polissage",
-      note: "Patient sensible aux gencives",
-      patientId: 1,
-      patientNomComplet: "Mme. Sophie Martin",
-      dentisteId: 1
-    },
-    {
-      id: 302,
-      dateHeure: `${d}T10:00:00`,
-      dureeEstimee: "01:00:00",
-      statut: "Terminé",
-      motif: "Pose couronne céramique",
-      patientId: 2,
-      patientNomComplet: "M. Marc Lefevre",
-      dentisteId: 1
-    },
-    {
-      id: 303,
-      dateHeure: `${d}T14:00:00`,
-      dureeEstimee: "00:45:00",
-      statut: "Planifié",
-      motif: "Traitement de canal (dent 14)",
-      patientId: 4,
-      patientNomComplet: "M. Luc Durand",
-      dentisteId: 1
-    },
-    {
-      id: 304,
-      dateHeure: `${d}T16:00:00`,
-      dureeEstimee: "00:30:00",
-      statut: "Planifié",
-      motif: "Consultation générale",
-      patientId: 3,
-      patientNomComplet: "Mme. Amine Ben Ali",
-      dentisteId: 1
-    }
-  ]
-
-  patients.value = [
-    { id: 1, nom: "Martin", prenom: "Sophie" },
-    { id: 2, nom: "Lefevre", prenom: "Marc" },
-    { id: 3, nom: "Ben Ali", prenom: "Amine" },
-    { id: 4, nom: "Durand", prenom: "Luc" },
-    { id: 5, nom: "Khalifa", prenom: "Sarah" }
-  ]
+const formatTime = (dateStr) => {
+  if (!dateStr) return ''
+  const normalized = dateStr.replace(' ', 'T')
+  const date = new Date(normalized)
+  return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
-// Map appointments to hour slots
-const getAppointmentInSlot = (slotTime) => {
-  return appointments.value.find(app => {
-    if (!app.dateHeure) return false
-    const parts = app.dateHeure.includes('T') ? app.dateHeure.split('T') : app.dateHeure.split(' ')
-    const time = parts[1]?.substring(0, 5)
-    return time === slotTime
+const formatDuration = (durationStr) => {
+  if (!durationStr) return ''
+  const parts = durationStr.split(':')
+  const hours = parseInt(parts[0], 10)
+  const minutes = parseInt(parts[1], 10)
+  if (hours > 0) {
+    return `${hours}h ${minutes > 0 ? minutes + 'm' : ''}`.trim()
+  }
+  return `${minutes} min`
+}
+
+const availableSlots = computed(() => {
+  return timeSlots.filter(slot => {
+    return !appointments.value.some(app => {
+      if (!app.dateHeure) return false
+      const parts = app.dateHeure.includes('T') ? app.dateHeure.split('T') : app.dateHeure.split(' ')
+      const time = parts[1]?.substring(0, 5)
+      return time === slot && app.statut !== 'Annulé' && app.statut !== 'Annule'
+    })
   })
-}
+})
 
 const openSlotDialog = (slotTime) => {
   defaultSlotTime.value = slotTime
@@ -162,22 +154,13 @@ const handleSaveApp = async (formData) => {
     showAddDialog.value = false
     fetchData()
   } catch (error) {
-    // Local simulation fallback
-    const patient = patients.value.find(p => p.id === formData.patientId)
-    const newApp = {
-      id: Date.now(),
-      dateHeure: formData.dateHeure,
-      dureeEstimee: formData.dureeEstimee,
-      statut: "Planifié",
-      motif: formData.motif,
-      note: formData.note,
-      patientId: formData.patientId,
-      patientNomComplet: patient ? `${patient.prenom} ${patient.nom}` : "Patient Existant",
-      dentisteId: formData.dentisteId
-    }
-    appointments.value.push(newApp)
-    toast.add({ severity: 'success', summary: 'RDV Simulé', detail: 'Rendez-vous enregistré localement.', life: 3000 })
-    showAddDialog.value = false
+    console.error('[API Error] handleSaveApp failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de planification',
+      detail: 'Impossible d\'enregistrer le rendez-vous.',
+      life: 5000
+    })
   } finally {
     savingApp.value = false
   }
@@ -200,9 +183,13 @@ const confirmCancel = async () => {
     toast.add({ severity: 'success', summary: 'Succès', detail: 'Rendez-vous annulé.', life: 3000 })
     fetchData()
   } catch (error) {
-    console.warn("[API Error] cancelAppointment failed, falling back to local simulation:", error)
-    appointments.value = appointments.value.filter(a => a.id !== id)
-    toast.add({ severity: 'info', summary: 'Annulation locale', detail: 'Rendez-vous retiré de l\'agenda local.', life: 3000 })
+    console.error('[API Error] confirmCancel failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur d\'annulation',
+      detail: 'Impossible d\'annuler ce rendez-vous.',
+      life: 5000
+    })
   } finally {
     appointmentIdToCancel.value = null
   }
@@ -213,7 +200,8 @@ watch([selectedDate, selectedDentist], () => {
   fetchData()
 })
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchDentists()
   fetchData()
   if (route.query.new === 'true') {
     openSlotDialog('08:00')
@@ -255,80 +243,108 @@ onMounted(() => {
     <!-- Main Layout: Grid Calendar Timeline (2/3) + Sidebar Controls (1/3) -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
-      <!-- LEFT: Timeline Grid (Choice D) -->
-      <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200/65 shadow-sm p-6">
+      <!-- LEFT: Booked list & Available slots grid -->
+      <div class="lg:col-span-2 space-y-6 animate-slide-in">
         
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Planning journalier</h2>
-          <span class="text-xs text-slate-400 font-bold uppercase">{{ selectedDate }}</span>
-        </div>
+        <!-- Section 1: Booked Appointments of the day -->
+        <div class="bg-white rounded-xl border border-slate-200/65 shadow-sm p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Rendez-vous de la journée</h2>
+              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Liste chronologique des consultations planifiées.</p>
+            </div>
+            <span class="text-xs text-slate-400 font-bold uppercase">{{ selectedDate }}</span>
+          </div>
 
-        <div v-if="loading" class="py-24 flex flex-col items-center justify-center text-slate-400 gap-2">
-          <i class="pi pi-spin pi-spinner text-3xl text-sky-500"></i>
-          <span class="text-xs font-semibold">Chargement du planning...</span>
-        </div>
+          <div v-if="loading" class="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
+            <i class="pi pi-spin pi-spinner text-3xl text-sky-500"></i>
+            <span class="text-xs font-semibold">Chargement du planning...</span>
+          </div>
 
-        <div v-else class="relative border-l-2 border-slate-100 pl-4 space-y-4">
-          <!-- Iterate over daily slots -->
-          <div 
-            v-for="slot in timeSlots"
-            :key="slot"
-            class="relative flex items-start group min-h-[50px] gap-4"
-          >
-            <!-- Hour Indicator -->
-            <div class="w-10 text-xs font-extrabold text-slate-400 select-none pt-0.5">
-              {{ slot }}
+          <div v-else>
+            <!-- Check if there are active appointments -->
+            <div v-if="!appointments.length" class="text-center py-12 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+              <i class="pi pi-calendar-times text-3xl text-slate-300"></i>
+              <p class="text-xs font-bold text-slate-500 mt-3">Aucun rendez-vous planifié pour cette journée.</p>
             </div>
 
-            <!-- Booking Card or Quick Reservation button -->
-            <div class="flex-1">
-              <!-- Slot Booked -->
+            <div v-else class="space-y-3">
               <div 
-                v-if="getAppointmentInSlot(slot)"
-                class="p-3 bg-white border border-slate-200 hover:border-slate-350 shadow-sm rounded-xl flex items-center justify-between transition-all duration-200"
+                v-for="app in appointments"
+                :key="app.id"
+                class="p-4 bg-slate-50/55 hover:bg-slate-50 border border-slate-150/80 hover:border-slate-200 rounded-xl flex items-center justify-between transition-all duration-200 gap-4"
               >
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-extrabold text-slate-800">{{ getAppointmentInSlot(slot).patientNomComplet }}</span>
-                    <span 
-                      class="px-2 py-0.5 text-[8px] font-extrabold rounded-full uppercase tracking-wider"
-                      :class="[
-                        getAppointmentInSlot(slot).statut === 'Terminé' 
-                          ? 'bg-emerald-50 text-emerald-700' 
-                          : 'bg-sky-50 text-sky-700'
-                      ]"
-                    >
-                      {{ getAppointmentInSlot(slot).statut }}
-                    </span>
+                <div class="flex items-center gap-4 min-w-0">
+                  <!-- Time Badge -->
+                  <div class="px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-extrabold tracking-wide flex-shrink-0 text-center border border-sky-100">
+                    {{ formatTime(app.dateHeure) }}
                   </div>
-                  <div class="text-[10px] text-slate-500 mt-1 flex items-center gap-2 font-medium">
-                    <span>Motif: {{ getAppointmentInSlot(slot).motif }}</span>
-                    <span>&bull;</span>
-                    <span>Durée: {{ getAppointmentInSlot(slot).dureeEstimee }}</span>
+                  <!-- Patient & Motif -->
+                  <div class="min-w-0">
+                    <p class="text-sm font-bold text-slate-800 truncate">
+                      {{ app.patientNomComplet }}
+                    </p>
+                    <div class="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-slate-500 font-medium">
+                      <span>Motif: {{ app.motif }}</span>
+                      <span>&bull;</span>
+                      <span>Durée: {{ formatDuration(app.dureeEstimee) }}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div class="flex items-center gap-1.5">
+                <!-- Status and Cancel Action -->
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  <span 
+                    class="px-2.5 py-0.5 text-[9px] font-extrabold rounded-full uppercase tracking-wider border"
+                    :class="[
+                      app.statut === 'Terminé' 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                        : 'bg-sky-50 text-sky-700 border-sky-100'
+                    ]"
+                  >
+                    {{ app.statut }}
+                  </span>
+                  
                   <button 
-                    @click="requestCancel(getAppointmentInSlot(slot).id)"
-                    class="w-6 h-6 rounded bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200/50 flex items-center justify-center cursor-pointer transition-colors"
+                    @click="requestCancel(app.id)"
+                    class="w-8 h-8 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center cursor-pointer transition-colors shadow-sm"
                     title="Annuler le rendez-vous"
                   >
-                    <i class="pi pi-trash text-[9px] font-bold"></i>
+                    <i class="pi pi-trash text-xs font-bold"></i>
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
 
-              <!-- Slot Empty: Reservation Button -->
-              <div v-else>
-                <button 
-                  @click="openSlotDialog(slot)"
-                  class="w-full text-left py-3 px-4 border border-dashed border-slate-200 hover:border-sky-300 hover:bg-sky-50/10 rounded-xl text-slate-400 hover:text-sky-600 transition-all flex items-center gap-2 text-xs font-semibold cursor-pointer group-hover:border-slate-300"
-                >
-                  <i class="pi pi-plus text-[10px]"></i>
-                  <span>Planifier une consultation à {{ slot }}</span>
-                </button>
-              </div>
+        <!-- Section 2: Compact Available Slots Grid -->
+        <div class="bg-white rounded-xl border border-slate-200/65 shadow-sm p-6">
+          <div class="mb-4">
+            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Créneaux de consultation disponibles</h2>
+            <p class="text-[11px] text-slate-400 font-medium mt-0.5">Cliquez sur un créneau libre pour planifier rapidement un rendez-vous.</p>
+          </div>
+
+          <div v-if="loading" class="py-6 flex justify-center text-slate-400">
+            <i class="pi pi-spin pi-spinner text-xl text-sky-500"></i>
+          </div>
+
+          <div v-else>
+            <div v-if="!availableSlots.length" class="text-center py-6 text-xs text-rose-500 bg-rose-50 border border-rose-100 rounded-xl">
+              Tous les créneaux de cette journée sont complets ou indisponibles.
+            </div>
+
+            <div v-else class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
+              <button
+                v-for="slot in availableSlots"
+                :key="slot"
+                type="button"
+                @click="openSlotDialog(slot)"
+                class="py-2 px-2 bg-white hover:bg-sky-55/30 border border-slate-200 hover:border-sky-500 text-slate-700 hover:text-sky-600 rounded-xl text-xs font-extrabold text-center transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+              >
+                <i class="pi pi-plus text-[8px] font-bold opacity-60"></i>
+                <span>{{ slot }}</span>
+              </button>
             </div>
           </div>
         </div>

@@ -33,7 +33,8 @@ const form = ref({
   email: '',
   adresse: '',
   antecedentsMedicaux: '',
-  groupSanguin: ''
+  groupSanguin: '',
+  invite: true
 })
 
 watch(() => props.visible, (newVal) => {
@@ -46,7 +47,8 @@ watch(() => props.visible, (newVal) => {
       email: '',
       adresse: '',
       antecedentsMedicaux: '',
-      groupSanguin: ''
+      groupSanguin: '',
+      invite: true
     }
   }
 }, { immediate: true })
@@ -154,6 +156,19 @@ const handleClose = () => {
               class="w-full text-xs"
             />
           </div>
+        </div>
+
+        <!-- Invitation checkbox -->
+        <div v-if="form.email" class="flex items-center gap-2.5 py-1.5 animate-fade-in">
+          <input 
+            id="invite-patient"
+            v-model="form.invite"
+            type="checkbox"
+            class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded cursor-pointer"
+          />
+          <label for="invite-patient" class="text-xs font-semibold text-slate-700 select-none cursor-pointer">
+            Créer un compte portail patient et envoyer une invitation par e-mail
+          </label>
         </div>
 
         <!-- Adresse -->

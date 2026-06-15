@@ -5,4 +5,9 @@ public static class Errors
     public const string InvalidCredentials = "Nom d'utilisateur ou mot de passe incorrect.";
     public const string AccountDisabled = "Ce compte est désactivé.";
     public const string InvalidToken = "Token invalide ou expiré.";
+
+    public static class SaaS
+    {
+        public const string SubscriptionExpired = "L'abonnement de votre cabinet a expiré.";
+    }
 }

@@ -11,10 +11,12 @@ namespace Dentiste.Core.Features.Patients.Commands.Update;
 public class UpdatePatientCommandHandler : ICommandHandler<UpdatePatientCommand>
 {
     private readonly DentisteContext _context;
+    private readonly Dentiste.Core.Infrastructure.Security.ICurrentUserProvider _currentUserProvider;
 
-    public UpdatePatientCommandHandler(DentisteContext context)
+    public UpdatePatientCommandHandler(DentisteContext context, Dentiste.Core.Infrastructure.Security.ICurrentUserProvider currentUserProvider)
     {
         _context = context;
+        _currentUserProvider = currentUserProvider;
     }
 
     public async Task<Result> Handle(UpdatePatientCommand request, CancellationToken cancellationToken)
@@ -48,6 +50,15 @@ public class UpdatePatientCommandHandler : ICommandHandler<UpdatePatientCommand>
         patient.GroupSanguin = request.GroupSanguin;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        var currentUserId = _currentUserProvider.GetUserId() ?? 1;
+        request.EventPayload = new
+        {
+            PatientId = request.Id,
+            Nom = request.Nom,
+            Prenom = request.Prenom,
+            CreatedBy = currentUserId
+        };
 
         return Result.Success();
     }

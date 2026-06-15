@@ -31,6 +31,10 @@ namespace Dentiste.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("ACT_CABINET_ID");
+
                     b.Property<string>("CodeNomenclature")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ACT_CODE_NOMENCLATURE");
@@ -47,7 +51,53 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.ToTable("ACTE_MEDICAL");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.ArticleDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("ART_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("ART_CABINET_ID");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ART_DESCRIPTION");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("ART_NOM");
+
+                    b.Property<int>("QuantiteEnStock")
+                        .HasColumnType("int")
+                        .HasColumnName("ART_QUANTITE_EN_STOCK");
+
+                    b.Property<int>("SeuilAlerte")
+                        .HasColumnType("int")
+                        .HasColumnName("ART_SEUIL_ALERTE");
+
+                    b.Property<string>("Unite")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("ART_UNITE");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CabinetId");
+
+                    b.ToTable("ARTICLE");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.AuditLogDao", b =>
@@ -64,6 +114,10 @@ namespace Dentiste.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("AUD_ACTION");
+
+                    b.Property<int?>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("AUD_CABINET_ID");
 
                     b.Property<string>("KeyValues")
                         .HasColumnType("nvarchar(max)")
@@ -94,11 +148,98 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.HasIndex("TableName");
 
                     b.HasIndex("Timestamp");
 
                     b.ToTable("AUDIT_LOG");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.CabinetDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("CAB_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Adresse")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("CAB_ADRESSE");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CAB_CREATED_AT");
+
+                    b.Property<bool>("IsSubscriptionActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("CAB_IS_ACTIVE");
+
+                    b.Property<string>("NomCabinet")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("CAB_NOM");
+
+                    b.Property<string>("TelephoneCorporate")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("CAB_TELEPHONE");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CABINET");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.ConfigurationCabinetDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("CFG_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("CFG_CABINET_ID");
+
+                    b.Property<string>("SenderName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CFG_SENDER_NAME");
+
+                    b.Property<bool?>("SmtpEnableSsl")
+                        .HasColumnType("bit")
+                        .HasColumnName("CFG_SMTP_SSL");
+
+                    b.Property<string>("SmtpHost")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CFG_SMTP_HOST");
+
+                    b.Property<string>("SmtpPassword")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CFG_SMTP_PASSWORD");
+
+                    b.Property<int?>("SmtpPort")
+                        .HasColumnType("int")
+                        .HasColumnName("CFG_SMTP_PORT");
+
+                    b.Property<string>("SmtpUsername")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CFG_SMTP_USERNAME");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CabinetId")
+                        .IsUnique();
+
+                    b.ToTable("CONFIGURATION_CABINET");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.ConsultationDao", b =>
@@ -109,6 +250,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("CON_ID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("CON_CABINET_ID");
 
                     b.Property<DateTime>("DateConsultation")
                         .HasColumnType("datetime2")
@@ -128,6 +273,8 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.HasIndex("DentisteId");
 
                     b.HasIndex("PatientId");
@@ -143,6 +290,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("FAC_ID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("FAC_CABINET_ID");
 
                     b.Property<DateTime>("DateEmission")
                         .HasColumnType("datetime2")
@@ -174,12 +325,269 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.HasIndex("NumeroFacture")
                         .IsUnique();
 
                     b.HasIndex("PatientId");
 
                     b.ToTable("FACTURE");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.NotificationDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("NTF_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("NTF_CABINET_ID");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("USR_ID_CREATED_BY");
+
+                    b.Property<int>("CreatedTo")
+                        .HasColumnType("int")
+                        .HasColumnName("USR_ID_CREATED_TO");
+
+                    b.Property<DateTime>("DateRappel")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("NTF_DATE");
+
+                    b.Property<int>("DemandeId")
+                        .HasColumnType("int")
+                        .HasColumnName("NTF_DEMANDE_ID");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("NTF_NOTE");
+
+                    b.Property<int>("Domaine")
+                        .HasColumnType("int")
+                        .HasColumnName("NO_DOMAINE");
+
+                    b.Property<string>("EntityCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("NTF_ENTITY_CODE");
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("NTF_ENTITY_ID");
+
+                    b.Property<bool>("IsSeen")
+                        .HasColumnType("bit")
+                        .HasColumnName("NTF_SEEN");
+
+                    b.Property<int>("Nature")
+                        .HasColumnType("int")
+                        .HasColumnName("NTF_NATURE");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("NTF_TITLE");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasColumnName("NTF_TYPE");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CabinetId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedTo");
+
+                    b.ToTable("NOTIFICATION");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.OptionDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("OPT_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)")
+                        .HasColumnName("OPT_DESCRIPTION");
+
+                    b.Property<string>("Group")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("OPT_GROUP");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("OPT_LABEL");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("OPT_NAME");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("bit")
+                        .HasColumnName("OPT_REQUIRED");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)")
+                        .HasColumnName("OPT_VALUE");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OPTION");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Serveur SMTP sortant",
+                            Group = "SMTP",
+                            Label = "Hôte SMTP",
+                            Name = "smtp.host",
+                            Required = true,
+                            Value = "smtp.gmail.com"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Port de connexion SMTP (587 TLS, 465 SSL)",
+                            Group = "SMTP",
+                            Label = "Port SMTP",
+                            Name = "smtp.port",
+                            Required = true,
+                            Value = "587"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Adresse email de l'expéditeur",
+                            Group = "SMTP",
+                            Label = "Email expéditeur",
+                            Name = "smtp.username",
+                            Required = true,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Mot de passe ou app password",
+                            Group = "SMTP",
+                            Label = "Mot de passe",
+                            Name = "smtp.password",
+                            Required = false,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Chiffrement de la connexion",
+                            Group = "SMTP",
+                            Label = "Activer SSL/TLS",
+                            Name = "smtp.ssl",
+                            Required = true,
+                            Value = "true"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Nom du compte Cloudinary",
+                            Group = "Cloudinary",
+                            Label = "Cloud Name",
+                            Name = "cloudinary.name",
+                            Required = false,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Clé API Cloudinary",
+                            Group = "Cloudinary",
+                            Label = "API Key",
+                            Name = "cloudinary.key",
+                            Required = false,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "Clé secrète Cloudinary",
+                            Group = "Cloudinary",
+                            Label = "API Secret",
+                            Name = "cloudinary.secret",
+                            Required = false,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Description = "Dossier racine pour les fichiers",
+                            Group = "Cloudinary",
+                            Label = "Dossier",
+                            Name = "cloudinary.folder",
+                            Required = false,
+                            Value = "dentiste"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Local, Desactiver, Google, Microsoft",
+                            Group = "Storage",
+                            Label = "Type de stockage",
+                            Name = "storage.provider.type",
+                            Required = true,
+                            Value = "Desactiver"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Description = "Token d'authentification cloud",
+                            Group = "Storage",
+                            Label = "Token OAuth",
+                            Name = "storage.provider.token",
+                            Required = false,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Description = "Chemin absolu du répertoire de stockage local",
+                            Group = "Storage",
+                            Label = "Chemin local",
+                            Name = "storage.provider.path",
+                            Required = false,
+                            Value = ""
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Description = "Email du compte cloud connecté",
+                            Group = "Storage",
+                            Label = "Compte connecté",
+                            Name = "storage.provider.account",
+                            Required = false,
+                            Value = ""
+                        });
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.OrdonnanceDao", b =>
@@ -190,6 +598,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("ORD_ID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("ORD_CABINET_ID");
 
                     b.Property<int>("ConsultationId")
                         .HasColumnType("int")
@@ -206,6 +618,8 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.HasIndex("ConsultationId")
                         .IsUnique();
 
@@ -220,6 +634,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("PAI_ID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("PAI_CABINET_ID");
 
                     b.Property<DateTime>("DatePaiement")
                         .HasColumnType("datetime2")
@@ -240,6 +658,8 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("PAI_MONTANT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CabinetId");
 
                     b.HasIndex("FactureId");
 
@@ -262,6 +682,10 @@ namespace Dentiste.Data.Migrations
                     b.Property<string>("AntecedentsMedicaux")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("PAT_ANTECEDENTS_MEDICAUX");
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("PAT_CABINET_ID");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -299,7 +723,45 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.ToTable("PATIENT");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.RecetteActeDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("REC_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActeMedicalId")
+                        .HasColumnType("int")
+                        .HasColumnName("REC_ACTE_MEDICAL_ID");
+
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("int")
+                        .HasColumnName("REC_ARTICLE_ID");
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("REC_CABINET_ID");
+
+                    b.Property<int>("QuantiteRequise")
+                        .HasColumnType("int")
+                        .HasColumnName("REC_QUANTITE_REQUISE");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActeMedicalId");
+
+                    b.HasIndex("ArticleId");
+
+                    b.HasIndex("CabinetId");
+
+                    b.ToTable("RECETTE_ACTE");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.RendezVousDao", b =>
@@ -310,6 +772,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("RDV_ID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("RDV_CABINET_ID");
 
                     b.Property<DateTime>("DateHeure")
                         .HasColumnType("datetime2")
@@ -342,6 +808,8 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("RDV_STATUT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CabinetId");
 
                     b.HasIndex("DentisteId");
 
@@ -387,6 +855,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnType("int")
                         .HasColumnName("SOI_ACTE_MEDICAL_ID");
 
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("SOI_CABINET_ID");
+
                     b.Property<int>("ConsultationId")
                         .HasColumnType("int")
                         .HasColumnName("SOI_CONSULTATION_ID");
@@ -412,6 +884,8 @@ namespace Dentiste.Data.Migrations
 
                     b.HasIndex("ActeMedicalId");
 
+                    b.HasIndex("CabinetId");
+
                     b.HasIndex("ConsultationId");
 
                     b.ToTable("SOIN_EFFECTUE");
@@ -425,6 +899,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnName("USR_ID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("USR_CABINET_ID");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -476,6 +954,8 @@ namespace Dentiste.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CabinetId");
+
                     b.HasIndex("Email")
                         .IsUnique();
 
@@ -487,8 +967,57 @@ namespace Dentiste.Data.Migrations
                     b.ToTable("USER");
                 });
 
+            modelBuilder.Entity("Dentiste.Data.Models.ActeMedicalDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cabinet");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.ArticleDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cabinet");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.AuditLogDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Cabinet");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.ConfigurationCabinetDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithOne()
+                        .HasForeignKey("Dentiste.Data.Models.ConfigurationCabinetDao", "CabinetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cabinet");
+                });
+
             modelBuilder.Entity("Dentiste.Data.Models.ConsultationDao", b =>
                 {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Dentiste.Data.Models.UserDao", "Dentiste")
                         .WithMany()
                         .HasForeignKey("DentisteId")
@@ -501,6 +1030,8 @@ namespace Dentiste.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Cabinet");
+
                     b.Navigation("Dentiste");
 
                     b.Navigation("Patient");
@@ -508,39 +1039,134 @@ namespace Dentiste.Data.Migrations
 
             modelBuilder.Entity("Dentiste.Data.Models.FactureDao", b =>
                 {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Dentiste.Data.Models.PatientDao", "Patient")
                         .WithMany("Factures")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Cabinet");
+
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.NotificationDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Dentiste.Data.Models.UserDao", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Dentiste.Data.Models.UserDao", "CreatedToUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedTo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cabinet");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("CreatedToUser");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.OrdonnanceDao", b =>
                 {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Dentiste.Data.Models.ConsultationDao", "Consultation")
                         .WithOne("Ordonnance")
                         .HasForeignKey("Dentiste.Data.Models.OrdonnanceDao", "ConsultationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Cabinet");
+
                     b.Navigation("Consultation");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.PaiementDao", b =>
                 {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Dentiste.Data.Models.FactureDao", "Facture")
                         .WithMany("Paiements")
                         .HasForeignKey("FactureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Cabinet");
+
                     b.Navigation("Facture");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.PatientDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cabinet");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.RecetteActeDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.ActeMedicalDao", "ActeMedical")
+                        .WithMany()
+                        .HasForeignKey("ActeMedicalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Dentiste.Data.Models.ArticleDao", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ActeMedical");
+
+                    b.Navigation("Article");
+
+                    b.Navigation("Cabinet");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.RendezVousDao", b =>
                 {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Dentiste.Data.Models.UserDao", "Dentiste")
                         .WithMany()
                         .HasForeignKey("DentisteId")
@@ -552,6 +1178,8 @@ namespace Dentiste.Data.Migrations
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Cabinet");
 
                     b.Navigation("Dentiste");
 
@@ -566,6 +1194,12 @@ namespace Dentiste.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Dentiste.Data.Models.ConsultationDao", "Consultation")
                         .WithMany("SoinsEffectues")
                         .HasForeignKey("ConsultationId")
@@ -574,18 +1208,32 @@ namespace Dentiste.Data.Migrations
 
                     b.Navigation("ActeMedical");
 
+                    b.Navigation("Cabinet");
+
                     b.Navigation("Consultation");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.UserDao", b =>
                 {
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany("Users")
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Dentiste.Data.Models.RoleDao", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Cabinet");
+
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Dentiste.Data.Models.CabinetDao", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.ConsultationDao", b =>

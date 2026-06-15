@@ -1,12 +1,13 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import PendingRequestsTable from './components/PendingRequestsTable.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const handleNewPatient = () => {
-  router.push({ name: 'patients', query: { add: 'true' } })
+  router.push({ name: 'SecretaireAdmissions', query: { add: 'true' } })
 }
 </script>
 
@@ -37,7 +38,7 @@ const handleNewPatient = () => {
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Waiting Room -->
       <div class="bg-white p-6 rounded-xl border border-slate-200/65 shadow-sm">
-        <h3 class="text-xs font-extrabold text-slate-850 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
+        <h3 class="text-xs font-extrabold text-slate-855 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
           <i class="pi pi-clock text-slate-400"></i>
           <span>Salle d'attente (3 Patients)</span>
         </h3>
@@ -60,7 +61,7 @@ const handleNewPatient = () => {
       <!-- Financial shortcuts -->
       <div class="bg-white p-6 rounded-xl border border-slate-200/65 shadow-sm flex flex-col justify-between">
         <div>
-          <h3 class="text-xs font-extrabold text-slate-850 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
+          <h3 class="text-xs font-extrabold text-slate-855 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
             <i class="pi pi-wallet text-slate-400"></i>
             <span>Derniers Impayés & Règlements</span>
           </h3>
@@ -71,7 +72,7 @@ const handleNewPatient = () => {
         
         <div class="mt-6 pt-4 border-t border-slate-100">
           <router-link 
-            :to="{ name: 'billing' }"
+            :to="{ name: 'SecretaireBilling' }"
             class="text-[10px] text-sky-600 hover:text-sky-700 font-bold block uppercase tracking-wider cursor-pointer"
           >
             Consulter le grand livre comptable
@@ -79,5 +80,8 @@ const handleNewPatient = () => {
         </div>
       </div>
     </div>
+
+    <!-- Pending Patient Requests (Full Width) -->
+    <PendingRequestsTable />
   </div>
 </template>

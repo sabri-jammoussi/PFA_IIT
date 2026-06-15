@@ -36,4 +36,10 @@ public class SoinEffectueDao
     [Column("SOI_ACTE_MEDICAL_ID")]
     public int ActeMedicalId { get; set; }
     public ActeMedicalDao ActeMedical { get; set; } = null!;
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("SOI_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

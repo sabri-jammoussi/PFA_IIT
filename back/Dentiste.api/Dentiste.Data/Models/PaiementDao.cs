@@ -27,4 +27,10 @@ public class PaiementDao
     [Column("PAI_FACTURE_ID")]
     public int FactureId { get; set; }
     public FactureDao Facture { get; set; } = null!;
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("PAI_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

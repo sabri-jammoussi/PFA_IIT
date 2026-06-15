@@ -20,4 +20,10 @@ public class ActeMedicalDao
 
     [Column("ACT_CODE_NOMENCLATURE")]
     public string? CodeNomenclature { get; set; } // Pour la CNAM / Assurances
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("ACT_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

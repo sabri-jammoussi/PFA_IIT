@@ -45,4 +45,9 @@ public class UserDao
     [Column("USR_ROLE_ID")]
     public int RoleId { get; set; }
     public RoleDao Role { get; set; } = null!;
+
+    // Multi-tenant Foreign Key
+    [Column("USR_CABINET_ID")]
+    public int? CabinetId { get; set; }
+    public CabinetDao? Cabinet { get; set; }
 }

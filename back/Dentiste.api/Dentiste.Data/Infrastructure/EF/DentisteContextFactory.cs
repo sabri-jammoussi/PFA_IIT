@@ -51,7 +51,7 @@ public class DentisteContextFactory : IDesignTimeDbContextFactory<DentisteContex
 
         // Utilise la chaîne de connexion dynamique ou celle par défaut
         optionsBuilder.UseSqlServer(
-            connectionString ?? "Server=.;Database=dentiste_db;User Id=sa;Password=123456.aA;TrustServerCertificate=True;");
+            connectionString ?? "Server=.;Database=dentiste_db2;User Id=sa;Password=123456.aA;TrustServerCertificate=True;");
 
         return new DentisteContext(optionsBuilder.Options);
     }

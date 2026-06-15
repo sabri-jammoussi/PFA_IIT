@@ -3,4 +3,6 @@
   <Project Path="Dentiste.Core/Dentiste.Core.csproj" />
   <Project Path="Dentiste.Data/Dentiste.Data.csproj" />
   <Project Path="Dentiste.Gateway/Dentiste.Gateway.csproj" />
+  <Project Path="Dentiste.Notification/Dentiste.Notification.csproj" />
+  <Project Path="Dentiste.Notification.Core/Dentiste.Notification.Core.csproj" />
 </Solution>

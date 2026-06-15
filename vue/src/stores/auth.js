@@ -30,7 +30,9 @@ function mapTokenToUser(token) {
     email: payload.email || '',
     nom: payload.nom || '',
     prenom: payload.prenom || '',
-    roleName: payload.role || ''
+    roleName: payload.role || '',
+    cabinetId: payload.cabinetId ? parseInt(payload.cabinetId) : null,
+    cabinetName: payload.cabinetName || ''
   }
 }
 
@@ -48,19 +50,35 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     role: (state) => {
-      const dbRole = state.user?.roleName || null
-      if (dbRole === 'Administrateur' || dbRole === 'Admin') return 'Admin'
-      if (dbRole === 'Assistant' || dbRole === 'Secretaire') return 'Secretaire'
-      return dbRole
+      let dbRole = state.user?.roleName || null
+      if (Array.isArray(dbRole)) {
+        dbRole = dbRole[0]
+      }
+      if (dbRole === 'Administrateur' || dbRole === 'Admin' || dbRole === 1 || dbRole === '1') return 1
+      if (dbRole === 'Dentiste' || dbRole === 2 || dbRole === '2') return 2
+      if (dbRole === 'Assistant' || dbRole === 'Secretaire' || dbRole === 3 || dbRole === '3') return 3
+      if (dbRole === 'Patient' || dbRole === 4 || dbRole === '4') return 4
+      return null
+    },
+    roleName() {
+      const r = this.role
+      if (r === 1) return 'Admin'
+      if (r === 2) return 'Dentiste'
+      if (r === 3) return 'Secretaire'
+      if (r === 4) return 'Patient'
+      return 'Inconnu'
     },
     isAdmin() {
-      return this.role === 'Admin'
+      return this.role === 1
     },
     isDentist() {
-      return this.role === 'Dentiste'
+      return this.role === 2
     },
     isSecretary() {
-      return this.role === 'Secretaire'
+      return this.role === 3
+    },
+    isPatient() {
+      return this.role === 4
     },
     fullName: (state) => {
       if (!state.user) return ''
@@ -86,6 +104,12 @@ export const useAuthStore = defineStore('auth', {
         this.user = mapTokenToUser(token)
 
         localStorage.setItem('denti_token', token)
+
+        // SaaS storage restructure
+        localStorage.setItem('auth_token', token)
+        localStorage.setItem('user_role', this.roleName)
+        localStorage.setItem('cabinet_id', this.user?.cabinetId || '')
+        localStorage.setItem('cabinet_name', this.user?.cabinetName || '')
         
         return { success: true }
       } catch (err) {
@@ -111,6 +135,10 @@ export const useAuthStore = defineStore('auth', {
         this.token = null
         this.user = null
         localStorage.removeItem('denti_token')
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user_role')
+        localStorage.removeItem('cabinet_id')
+        localStorage.removeItem('cabinet_name')
         this.loading = false
       }
     },

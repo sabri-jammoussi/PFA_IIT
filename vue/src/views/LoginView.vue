@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -69,9 +69,11 @@ const handleLogin = async () => {
 
       <!-- Header: Logo & Name -->
       <div class="relative z-10 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/30">
-          <i class="pi pi-shield text-xl text-slate-950 font-bold"></i>
-        </div>
+        <img 
+          src="@/assets/logo-removebg-preview.png" 
+          alt="DentiFlow Logo" 
+          class="w-10 h-10 object-contain rounded-xl bg-white/10 p-1 flex-shrink-0 shadow-lg"
+        />
         <div>
           <h2 class="text-xl font-bold tracking-wider uppercase font-sans">DentiFlow</h2>
           <p class="text-[10px] text-sky-400 tracking-widest font-semibold uppercase">Workspace Clinique</p>
@@ -144,9 +146,11 @@ const handleLogin = async () => {
         
         <!-- Clinic Branding for Mobile Header -->
         <div class="flex md:hidden items-center justify-center gap-2 mb-6">
-          <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
-            <i class="pi pi-shield text-base"></i>
-          </div>
+          <img 
+            src="@/assets/logo.png" 
+            alt="DentiFlow Logo" 
+            class="w-8 h-8 object-contain rounded-lg flex-shrink-0"
+          />
           <span class="text-lg font-bold text-slate-900 tracking-tight">DentiFlow</span>
         </div>
 
@@ -181,8 +185,7 @@ const handleLogin = async () => {
                 v-model="username" 
                 type="text" 
                 placeholder="Ex: dr.martin" 
-                class="w-full"
-                inputClass="w-full py-3.5 pl-10 pr-4 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl transition-all duration-200 text-slate-800 text-sm outline-none bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium"
+                class="w-full py-3.5 pl-10 pr-4 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl transition-all duration-200 text-slate-800 text-sm outline-none bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium"
               />
             </div>
           </div>
@@ -226,11 +229,18 @@ const handleLogin = async () => {
           <PButton 
             type="submit" 
             :loading="authStore.loading" 
+            :icon="authStore.loading ? 'pi pi-spin pi-spinner' : 'pi pi-sign-in'"
+            :label="authStore.loading ? 'Connexion en cours...' : 'Se connecter'"
             class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-md shadow-slate-900/10 hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer border-none"
-          >
-            <i v-if="!authStore.loading" class="pi pi-sign-in"></i>
-            <span>Se connecter</span>
-          </PButton>
+          />
+
+          <!-- Onboarding registration link -->
+          <div class="text-center mt-5 pt-3 border-t border-slate-100 text-xs">
+            <span class="text-slate-500 font-medium">Nouveau praticien ? </span>
+            <router-link :to="{ name: 'register' }" class="text-sky-600 hover:text-sky-700 font-extrabold transition-colors">
+              Créer un compte cabinet &rarr;
+            </router-link>
+          </div>
         </form>
       </div>
 

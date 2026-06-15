@@ -27,9 +27,11 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        // Find user by username or email (include Role for claims)
+        // Find user by username or email (include Role for claims, ignoring query filters since tenant context is not resolved yet during login)
         var user = await _context.Users
+            .IgnoreQueryFilters()
             .Include(u => u.Role)
+            .Include(u => u.Cabinet)
             .FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username, cancellationToken);
 
         if (user == null)
@@ -47,6 +49,12 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
         if (!user.IsActive)
         {
             return Result.Failure<LoginResponse>(Errors.AccountDisabled);
+        }
+
+        // Check SaaS subscription active status
+        if (user.CabinetId.HasValue && user.Cabinet != null && !user.Cabinet.IsSubscriptionActive)
+        {
+            return Result.Failure<LoginResponse>(Errors.SaaS.SubscriptionExpired);
         }
 
         // Generate JWT (this also registers the session in Redis)
