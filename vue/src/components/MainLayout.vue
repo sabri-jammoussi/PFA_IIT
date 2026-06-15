@@ -1,8 +1,12 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import * as signalR from '@microsoft/signalr'
+import { useNotificationsStore } from '@/stores/notifications'
+import NotificationsSidebar from '@/components/Notifications/NotificationsSidebar.vue'
+import useSignalx from '@/utilities/useSignalx'
 
 const router = useRouter()
 const route = useRoute()
@@ -16,61 +20,148 @@ const notificationDropdownOpen = ref(false)
 const userFullName = computed(() => authStore.fullName)
 const userRole = computed(() => {
   const role = authStore.role
-  if (role === 'Admin') return 'Administrateur'
-  if (role === 'Dentiste') return 'Dr. ' + authStore.user?.nom
-  if (role === 'Secretaire') return 'Secrétaire'
-  return role
+  if (role === 1) return 'Administrateur'
+  if (role === 2) return 'Dr. ' + (authStore.user?.nom || '')
+  if (role === 3) return 'Secrétaire'
+  if (role === 4) return 'Patient'
+  return 'Inconnu'
 })
 
-const notifications = ref([
-  { id: 1, text: "Nouveau RDV planifié pour Mme. Martin", time: "Il y a 5 min", unread: true },
-  { id: 2, text: "Facture #FAC-2026-004 réglée", time: "Il y a 15 min", unread: true },
-  { id: 3, text: "Fiche patient de M. Ben Ali mise à jour", time: "Il y a 1h", unread: false }
-])
+const notificationsStore = useNotificationsStore()
+const unreadCount = computed(() => notificationsStore.notificationsCount)
+const notificationsSidebarVisible = ref(false)
 
-const unreadCount = computed(() => notifications.value.filter(n => n.unread).length)
+const { connection } = useSignalx('MainLayout', 'notif')
+
+const handleReceiveMessage = async () => {
+  await notificationsStore.refreshNotifications()
+}
+
+onMounted(async () => {
+  connection.on('ReceiveMessage', handleReceiveMessage)
+  if (authStore.isAuthenticated) {
+    await notificationsStore.refreshNotifications()
+  }
+})
+
+onBeforeUnmount(async () => {
+  connection.off('ReceiveMessage', handleReceiveMessage)
+  if (connection.state !== signalR.HubConnectionState.Disconnected) {
+    await connection.stop()
+  }
+})
+
+const sidebarHeader = computed(() => {
+  const role = authStore.role
+  const cabinetName = authStore.user?.cabinetName || 'Cabinet'
+  if (role === 1) return '🌐 DENTIFLOW SAAS CONTROLLER'
+  if (role === 2) return `⚙️ CLINIQUE DENTIFLOW [${cabinetName}]`
+  if (role === 3) return `🏢 LOGISTIQUE DENTIFLOW [${cabinetName}]`
+  if (role === 4) return `🦷 ESPACE PATIENT [${cabinetName}]`
+  return 'DentiFlow'
+})
 
 const menuItems = computed(() => {
   const allItems = [
+    // Dentist Space (Role 2)
     {
-      label: 'Tableau de bord',
-      icon: 'pi pi-home',
-      routeName: 'home',
-      roles: ['Admin', 'Dentiste', 'Secretaire']
+      label: "Vue d'ensemble",
+      icon: 'pi pi-chart-bar',
+      routeName: 'DentistDashboard',
+      roles: [2]
     },
     {
-      label: 'Agenda & Rendez-vous',
-      icon: 'pi pi-calendar',
-      routeName: 'appointments',
-      roles: ['Admin', 'Dentiste', 'Secretaire']
-    },
-    {
-      label: 'Patients',
+      label: 'Dossiers Patients',
       icon: 'pi pi-users',
-      routeName: 'patients',
-      roles: ['Admin', 'Dentiste', 'Secretaire']
+      routeName: 'DentistPatients',
+      roles: [2]
     },
     {
-      label: 'Facturation & Paiements',
-      icon: 'pi pi-wallet',
-      routeName: 'billing',
-      roles: ['Admin', 'Dentiste', 'Secretaire']
+      label: 'Schéma Dentaire',
+      icon: 'pi pi-shield',
+      routeName: 'DentistConsultation',
+      roles: [2]
     },
     {
-      label: 'Actes Médicaux',
+      label: 'Catalogue des Actes',
       icon: 'pi pi-book',
-      routeName: 'medical-acts',
-      roles: ['Admin', 'Dentiste']
+      routeName: 'DentistActs',
+      roles: [2]
     },
     {
-      label: 'Configuration Système',
+      label: 'Gestion Secrétaires',
+      icon: 'pi pi-user-edit',
+      routeName: 'DentistSecretaires',
+      roles: [2]
+    },
+    {
+      label: 'Paramètres du Cabinet',
       icon: 'pi pi-cog',
-      routeName: 'AdminDashboard',
-      roles: ['Admin']
+      routeName: 'CabinetSettings',
+      roles: [2]
+    },
+
+    // Secretary Space (Role 3)
+    {
+      label: 'Agenda Global',
+      icon: 'pi pi-calendar',
+      routeName: 'SecretaireAgenda',
+      roles: [3]
+    },
+    {
+      label: 'Liste des Demandes',
+      icon: 'pi pi-bell',
+      routeName: 'SecretairePendingRequests',
+      roles: [3]
+    },
+    {
+      label: 'Admissions Patients',
+      icon: 'pi pi-user-plus',
+      routeName: 'SecretaireAdmissions',
+      roles: [3]
+    },
+    {
+      label: 'Facturation & Invoices',
+      icon: 'pi pi-wallet',
+      routeName: 'SecretaireBilling',
+      roles: [3]
+    },
+    {
+      label: 'Gestion des Stocks',
+      icon: 'pi pi-box',
+      routeName: 'SecretaireStock',
+      roles: [3]
+    },
+
+    // Patient Space (Role 4)
+    {
+      label: 'Mon Espace Santé',
+      icon: 'pi pi-heart',
+      routeName: 'PatientDashboard',
+      roles: [4]
+    },
+
+    // Platform Space (SuperAdmin - Role 1)
+    {
+      label: 'Performances Plateforme',
+      icon: 'pi pi-chart-line',
+      routeName: 'AdminAnalytics',
+      roles: [1]
+    },
+    {
+      label: 'Gestion des Cabinets',
+      icon: 'pi pi-building',
+      routeName: 'CabinetsManagement',
+      roles: [1]
+    },
+    {
+      label: 'Variables Système',
+      icon: 'pi pi-sliders-h',
+      routeName: 'AdminSmtpSettings',
+      roles: [1]
     }
   ]
 
-  // Filter based on user role from auth store
   const userRoleName = authStore.role
   return allItems.filter(item => item.roles.includes(userRoleName))
 })
@@ -107,14 +198,28 @@ const isRouteActive = (routeName) => {
 
 const currentBreadcrumb = computed(() => {
   const name = route.name?.toString() || ''
-  if (name === 'home' || name === 'AdminDashboard' || name === 'DentistDashboard' || name === 'SecretaireDashboard') return 'Tableau de bord'
-  if (name === 'appointments') return 'Agenda & Calendrier'
-  if (name === 'patients') return 'Gestion des Patients'
-  if (name === 'patient-profile') return 'Dossier Clinique Patient'
-  if (name === 'billing') return 'Facturation & Règlements'
-  if (name === 'medical-acts') return 'Catalogue des Actes'
+  if (name === 'home' || name === 'AdminAnalytics' || name === 'DentistDashboard' || name === 'SecretaireDashboard' || name === 'PatientDashboard') return 'Tableau de bord'
+  if (name === 'AdminSmtpSettings') return 'Configuration SMTP'
+  if (name === 'AdminCloudinarySettings') return 'Stockage Cloudinary'
+  if (name === 'AdminStorageSettings') return 'Espace de Stockage'
+  if (name === 'CabinetsManagement') return 'Gestion des Cabinets'
+  
+  if (name === 'SecretaireAgenda') return 'Agenda Global'
+  if (name === 'SecretairePendingRequests') return 'Liste des Demandes'
+  if (name === 'SecretaireAdmissions') return 'Admissions Patients'
+  
+  if (name === 'DentistPatients') return 'Dossiers Patients'
+  if (name === 'DentistPatientProfile') return 'Dossier Clinique Patient'
+  
+  if (name === 'SecretaireBilling') return 'Facturation & Invoices'
+  if (name === 'DentistActs') return 'Catalogue des Actes'
+  if (name === 'SecretaireStock') return 'Gestion des Stocks'
+  if (name === 'DentistConsultation') return 'Consultation Synchrone'
+  
   if (name === 'profile') return 'Mon Profil'
   if (name === 'settings') return 'Paramètres'
+  if (name === 'CabinetSettings') return 'Paramètres du Cabinet'
+  if (name === 'DentistSecretaires') return 'Gestion Secrétaires'
   if (name === 'Unauthorized') return 'Accès Restreint'
   return ''
 })
@@ -130,6 +235,9 @@ const markAllNotificationsRead = () => {
     <!-- Toast overlay -->
     <PToast />
 
+    <!-- Notifications Sidebar Drawer -->
+    <NotificationsSidebar v-model:visible="notificationsSidebarVisible" />
+
     <!-- Left Sidebar (Slate Navy) -->
     <aside 
       class="fixed inset-y-0 left-0 bg-slate-900 text-white z-30 transition-all duration-300 flex flex-col justify-between border-r border-slate-800 shadow-xl"
@@ -138,13 +246,20 @@ const markAllNotificationsRead = () => {
       <!-- Brand/Logo Section -->
       <div>
         <div class="h-16 flex items-center px-5 border-b border-slate-800 gap-3 overflow-hidden">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-500/20">
-            <i class="pi pi-shield text-xl text-slate-950 font-bold"></i>
-          </div>
+          <img 
+            src="@/assets/logo-removebg-preview.png" 
+            alt="DentiFlow Logo" 
+            class="w-10 h-10 object-contain rounded-xl bg-slate-800/30 p-1 flex-shrink-0 shadow-lg"
+          />
           <div v-show="sidebarOpen" class="flex flex-col transition-all duration-300">
             <span class="text-base font-bold tracking-tight text-white leading-tight">DentiFlow</span>
             <span class="text-[9px] text-sky-400 font-bold uppercase tracking-widest mt-0.5">Cabinet Intuitif</span>
           </div>
+        </div>
+
+        <!-- Dynamic SaaS Workspace Header -->
+        <div v-show="sidebarOpen" class="px-5 py-2.5 bg-slate-950/45 border-b border-slate-800/60 text-[9px] font-extrabold tracking-wider text-sky-400 uppercase leading-normal truncate">
+          {{ sidebarHeader }}
         </div>
 
         <!-- Navigation Menu -->
@@ -203,7 +318,7 @@ const markAllNotificationsRead = () => {
           </div>
           <div v-show="sidebarOpen" class="overflow-hidden flex-1 min-w-0">
             <p class="text-xs font-bold text-slate-200 truncate leading-normal">{{ userFullName }}</p>
-            <p class="text-[10px] text-slate-500 font-bold truncate tracking-wider uppercase mt-0.5">{{ authStore.role }}</p>
+            <p class="text-[10px] text-slate-500 font-bold truncate tracking-wider uppercase mt-0.5">{{ authStore.roleName }}</p>
           </div>
         </div>
       </div>
@@ -239,10 +354,16 @@ const markAllNotificationsRead = () => {
         <!-- Right: Actions & User Dropdown -->
         <div class="flex items-center gap-4 relative">
           
+          <!-- Cabinet Name dynamic display -->
+          <div v-if="authStore.user?.cabinetName" class="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 border border-slate-200/60 rounded-xl text-xs font-extrabold text-slate-700 shadow-sm">
+            <i class="pi pi-building text-sky-500"></i>
+            <span>{{ authStore.user.cabinetName }} &bull; {{ userRole }}</span>
+          </div>
+          
           <!-- Notifications Bell -->
           <div class="relative">
             <button 
-              @click="notificationDropdownOpen = !notificationDropdownOpen; userDropdownOpen = false"
+              @click="notificationsSidebarVisible = true; userDropdownOpen = false"
               class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-100 transition-colors cursor-pointer"
             >
               <i class="pi pi-bell text-base"></i>
@@ -253,44 +374,6 @@ const markAllNotificationsRead = () => {
                 {{ unreadCount }}
               </span>
             </button>
-
-            <!-- Notifications Dropdown Dialog -->
-            <div 
-              v-show="notificationDropdownOpen" 
-              class="absolute right-0 mt-2.5 w-80 bg-white border border-slate-200/65 rounded-xl shadow-xl z-50 py-2 divide-y divide-slate-100 animate-slide-in"
-            >
-              <div class="px-4 py-2 flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-900">Notifications</span>
-                <button 
-                  @click="markAllNotificationsRead" 
-                  class="text-[10px] text-sky-600 hover:text-sky-700 font-bold cursor-pointer"
-                >
-                  Tout marquer lu
-                </button>
-              </div>
-              <div class="max-h-60 overflow-y-auto">
-                <div 
-                  v-for="notif in notifications" 
-                  :key="notif.id"
-                  class="p-3.5 hover:bg-slate-50 transition-colors flex gap-2.5"
-                  :class="{'bg-sky-50/20': notif.unread}"
-                >
-                  <span class="w-2 h-2 rounded-full mt-1.5 bg-sky-400 flex-shrink-0" :class="{'opacity-0': !notif.unread}"></span>
-                  <div>
-                    <p class="text-xs font-medium text-slate-700 leading-normal">{{ notif.text }}</p>
-                    <span class="text-[9px] text-slate-400 font-semibold mt-1 block">{{ notif.time }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="p-2 text-center">
-                <button 
-                  @click="notificationDropdownOpen = false" 
-                  class="text-[10px] font-bold text-slate-500 hover:text-slate-800 py-1 w-full block cursor-pointer"
-                >
-                  Fermer
-                </button>
-              </div>
-            </div>
           </div>
 
           <!-- User dropdown block -->

@@ -52,9 +52,10 @@ builder.Services.AddReverseProxy()
 var app = builder.Build();
 
 app.UseCors(policy => policy
-    .AllowAnyOrigin()
+    .SetIsOriginAllowed(_ => true)
     .AllowAnyHeader()
-    .AllowAnyMethod());
+    .AllowAnyMethod()
+    .AllowCredentials());
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {

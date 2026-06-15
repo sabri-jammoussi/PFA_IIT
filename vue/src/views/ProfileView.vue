@@ -40,7 +40,7 @@ const fetchProfile = async () => {
       nom: authStore.user.nom,
       prenom: authStore.user.prenom,
       roleId: authStore.user.roleId,
-      roleName: authStore.role,
+      roleName: authStore.roleName,
       isActive: authStore.user.isActive,
       createdAt: authStore.user.createdAt || new Date().toISOString()
     }
@@ -127,7 +127,7 @@ onMounted(() => {
             {{ userProfile.prenom }} {{ userProfile.nom }}
           </h3>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100 text-[10px] font-bold uppercase tracking-wider mt-2">
-            {{ userProfile.roleName || authStore.role }}
+            {{ userProfile.roleName || authStore.roleName }}
           </span>
 
           <div class="w-full border-t border-slate-100 mt-6 pt-5 space-y-3.5 text-left text-xs text-slate-650 font-semibold">
@@ -196,7 +196,7 @@ onMounted(() => {
           <div class="space-y-1.5">
             <label class="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Rôle assigné</label>
             <input 
-              :value="userProfile.roleName || authStore.role"
+              :value="userProfile.roleName || authStore.roleName"
               type="text" 
               disabled
               class="w-full py-2.5 px-3.5 text-xs bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed font-medium"

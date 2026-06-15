@@ -44,52 +44,42 @@ const fetchPatients = async () => {
     patients.value = response.data?.items || response.data || []
     totalCount.value = response.data?.totalCount || patients.value.length
   } catch (error) {
-    console.warn("[API Error] fetchPatients failed, using mock list:", error)
-    loadMockPatients()
+    console.error('[API Error] fetchPatients failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de chargement',
+      detail: 'Impossible de charger la liste des patients.',
+      life: 5000
+    })
   } finally {
     loading.value = false
   }
 }
 
-const loadMockPatients = () => {
-  const allMocks = [
-    { id: 1, nom: "Martin", prenom: "Sophie", dateNaissance: "1988-04-12", telephone: "06 12 34 56 78", email: "sophie.m@mail.com", adresse: "15 Rue de Tunis, Sfax", antecedentsMedicaux: "Asthme léger", groupSanguin: "A+" },
-    { id: 2, nom: "Lefevre", prenom: "Marc", dateNaissance: "1975-09-24", telephone: "06 98 76 54 32", email: "m.lefevre@mail.com", adresse: "42 Av Habib Bourguiba, Tunis", antecedentsMedicaux: "Hypertension sous traitement", groupSanguin: "O-" },
-    { id: 3, nom: "Ben Ali", prenom: "Amine", dateNaissance: "1995-11-03", telephone: "07 55 44 33 22", email: "a.benali@mail.com", adresse: "Villa 54, Sousse", antecedentsMedicaux: "Allergie Pénicilline", groupSanguin: "B+" },
-    { id: 4, nom: "Durand", prenom: "Luc", dateNaissance: "1962-07-15", telephone: "06 11 22 33 44", email: "luc.durand@mail.com", adresse: "8 Rue de Tarek Ibn Ziad, Bizerte", antecedentsMedicaux: "Diabète Type 2", groupSanguin: "AB+" },
-    { id: 5, nom: "Khalifa", prenom: "Sarah", dateNaissance: "2001-02-18", telephone: "07 88 99 00 11", email: "s.khalifa@mail.com", adresse: "Cité El Ghazala, Ariana", antecedentsMedicaux: "Aucun", groupSanguin: "O+" }
-  ]
-  
-  if (search.value) {
-    patients.value = allMocks.filter(p => 
-      p.nom.toLowerCase().includes(search.value.toLowerCase()) || 
-      p.prenom.toLowerCase().includes(search.value.toLowerCase()) ||
-      p.telephone.includes(search.value)
-    )
-  } else {
-    patients.value = allMocks
-  }
-  totalCount.value = patients.value.length
-}
-
 const handleCreatePatient = async (formData) => {
   savingPatient.value = true
-  console.log(`[API Request] POST /patients`, formData)
+  const { invite, ...patientData } = formData
+  const url = invite ? '/patients/invite' : '/patients'
+  console.log(`[API Request] POST ${url}`, patientData)
   try {
-    const res = await api.post('/patients', formData)
-    console.log(`[API Response] POST /patients | Status: ${res.status}`, res.data)
-    toast.add({ severity: 'success', summary: 'Patient créé', detail: 'La nouvelle fiche patient a été ajoutée.', life: 3000 })
+    const res = await api.post(url, patientData)
+    console.log(`[API Response] POST ${url} | Status: ${res.status}`, res.data)
+    toast.add({ 
+      severity: 'success', 
+      summary: invite ? 'Patient créé & invité' : 'Patient créé', 
+      detail: invite ? 'Le patient a été créé et l\'invitation e-mail a été envoyée.' : 'La nouvelle fiche patient a été ajoutée.', 
+      life: 3000 
+    })
     showAddDialog.value = false
     fetchPatients()
   } catch (error) {
-    console.warn("[API Error] savePatient failed. Simulating local storage success:")
-    const newId = patients.value.length ? Math.max(...patients.value.map(p => p.id)) + 1 : 1
-    patients.value.push({
-      id: newId,
-      ...formData
+    console.error(`[API Error] handleCreatePatient failed:`, error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible d\'enregistrer la fiche patient.',
+      life: 5000
     })
-    toast.add({ severity: 'success', summary: 'Succès simulé', detail: 'Patient ajouté localement.', life: 3000 })
-    showAddDialog.value = false
   } finally {
     savingPatient.value = false
   }
@@ -106,13 +96,13 @@ const handleUpdatePatient = async (formData) => {
     showUpdateDialog.value = false
     fetchPatients()
   } catch (error) {
-    console.warn("[API Error] updatePatient failed. Simulating local storage success:")
-    const index = patients.value.findIndex(p => p.id === id)
-    if (index !== -1) {
-      patients.value[index] = { ...patients.value[index], ...formData }
-    }
-    toast.add({ severity: 'success', summary: 'Succès simulé', detail: 'Modifications patient enregistrées localement.', life: 3000 })
-    showUpdateDialog.value = false
+    console.error('[API Error] handleUpdatePatient failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de mise à jour',
+      detail: 'Impossible de mettre à jour la fiche patient.',
+      life: 5000
+    })
   } finally {
     savingPatient.value = false
   }
@@ -140,16 +130,20 @@ const confirmArchive = async () => {
     toast.add({ severity: 'success', summary: 'Succès', detail: 'Le dossier patient a été archivé.', life: 3000 })
     fetchPatients()
   } catch (error) {
-    // Local delete mockup simulation
-    patients.value = patients.value.filter(p => p.id !== id)
-    toast.add({ severity: 'info', summary: 'Archivage local', detail: 'Dossier archivé localement.', life: 3000 })
+    console.error('[API Error] confirmArchive failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur d\'archivage',
+      detail: 'Impossible d\'archiver ce dossier patient.',
+      life: 5000
+    })
   } finally {
     patientIdToArchive.value = null
   }
 }
 
 const viewPatientProfile = (id) => {
-  router.push({ name: 'patient-profile', params: { id } })
+  router.push({ name: 'DentistPatientProfile', params: { id } })
 }
 
 // Watchers

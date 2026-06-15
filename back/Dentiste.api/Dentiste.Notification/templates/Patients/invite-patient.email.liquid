@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur DentiFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Open Sans', Arial, sans-serif;">
+    <table role="presentation" width="100%" height="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; width: 100%; height: 100%; margin: 0; padding: 0;">
+        <tr>
+            <td align="center" valign="top" style="padding: 20px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 800px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td style="background-color: #000; padding: 20px; color: white;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="60" style="width:60px;"><img src="https://cdn-icons-png.flaticon.com/512/3467/3467773.png" alt="Logo" width="60" height="60" style="display:block; width:60px; height:60px; max-width:60px; filter: brightness(0) invert(1);"></td>
+                                    <td style="text-align: right; font-size: 12px;">
+                                        <p style="margin: 5px 0;">Cabinet: <span style="color: #35d300; font-weight: bold;">DentiFlow SaaS</span></p>
+                                        <p style="margin: 5px 0;">Tél: +216 26412881 | Email: contact@apbusinesssoft.com</p>
+                                        <p style="margin: 5px 0;">Adresse: Immeuble Pacha Centre Avenue Kheireddine Pacha Montplaisir – Tunis</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px; font-size: 14px; color: #333;">
+                            <p style="margin-bottom: 20px; font-size: 16px;">Bonjour <span style="color: #35d300; font-weight: bold;">{{ Prenom }} {{ Nom }}</span>,</p>
+                            <p style="margin: 15px 0;">
+                                Votre praticien ou secrétariat a créé votre profil patient sur le portail <strong>DentiFlow</strong>. Vous pouvez dès maintenant vous connecter à votre espace personnel.
+                            </p>
+
+                            <div style="
+                                margin: 25px 0;
+                                padding: 15px 20px;
+                                background-color: #f8f8f8;
+                                border-left: 4px solid #35d300;
+                                border-radius: 6px;
+                            ">
+                                <p style="margin: 8px 0;">
+                                    👤 <strong>Nom d'utilisateur / Email :</strong> {{ Email }}
+                                </p>
+                                <p style="margin: 8px 0;">
+                                    🔑 <strong>Mot de passe temporaire :</strong> {{ TemporaryPassword }}
+                                </p>
+                            </div>
+
+                            <p style="margin: 20px 0;">
+                                Par mesure de sécurité, il vous sera demandé de modifier ce mot de passe lors de votre première connexion. Connectez-vous via le lien ci-dessous :
+                            </p>
+
+                            <p style="margin: 20px 0; text-align: center;">
+                                <a href="http://localhost:5173/login"
+                                   style="
+                                   background-color: #000;
+                                   color: #fff;
+                                   padding: 12px 25px;
+                                   text-decoration: none;
+                                   font-weight: 600;
+                                   border-radius: 25px;
+                                   display: inline-block;
+                                   ">
+                                    <strong>Se connecter à DentiFlow</strong>
+                                </a>
+                            </p>
+
+                            <p style="margin-top: 50px; font-size: 12px; color: #777; text-align: center;">
+                                ⚠️ Ceci est un courriel automatique. Merci de ne pas y répondre.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: #e9e9e9; padding: 10px; font-size: 12px; text-align: center; color: #777; border-top: 1px solid #ddd;">
+                            <p style="margin: 5px 0;">&copy; 2026 AP Business Soft. Tous droits réservés.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -14,15 +14,31 @@ public class AddUserCommandHandler : ICommandHandler<AddUserCommand, int>
 {
     private readonly DentisteContext _context;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ICurrentUserProvider _currentUserProvider;
 
-    public AddUserCommandHandler(DentisteContext context, IPasswordHasher passwordHasher)
+    public AddUserCommandHandler(
+        DentisteContext context, 
+        IPasswordHasher passwordHasher,
+        ICurrentUserProvider currentUserProvider)
     {
         _context = context;
         _passwordHasher = passwordHasher;
+        _currentUserProvider = currentUserProvider;
     }
 
     public async Task<Result<int>> Handle(AddUserCommand request, CancellationToken cancellationToken)
     {
+        var creatorCabinetId = _currentUserProvider.GetCabinetId();
+        if (creatorCabinetId.HasValue && request.RoleId == 1)
+        {
+            return Result.Failure<int>("Seul l'administrateur système peut créer un compte Administrateur.");
+        }
+
+        if (request.RoleId == 4)
+        {
+            return Result.Failure<int>("Les comptes patients doivent être créés via le portail d'invitation des patients.");
+        }
+
         var roleExists = await _context.Roles.AnyAsync(r => r.Id == request.RoleId, cancellationToken);
         if (!roleExists)
         {
@@ -45,6 +61,8 @@ public class AddUserCommandHandler : ICommandHandler<AddUserCommand, int>
         var salt = Guid.NewGuid().ToString("N");
         var passwordHash = _passwordHasher.Hash(request.Password, salt);
 
+        int? targetCabinetId = creatorCabinetId ?? request.CabinetId;
+
         var user = new UserDao
         {
             Username = request.Username,
@@ -55,11 +73,16 @@ public class AddUserCommandHandler : ICommandHandler<AddUserCommand, int>
             Prenom = request.Prenom,
             IsActive = true,
             RoleId = request.RoleId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            CabinetId = targetCabinetId
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // Populate generated properties for background event mapping
+        request.Id = user.Id;
+        request.CabinetId = user.CabinetId;
 
         return Result.Success(user.Id);
     }

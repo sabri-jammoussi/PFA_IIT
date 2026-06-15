@@ -7,20 +7,34 @@ using Microsoft.EntityFrameworkCore;
 using Dentiste.Core.Messaging;
 using Dentiste.Core.Shared;
 using Dentiste.Data.Infrastructure.EF;
+using Dentiste.Core.Infrastructure.Security;
 
 namespace Dentiste.Core.Features.Users.Commands.Update;
 
 public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand>
 {
     private readonly DentisteContext _context;
+    private readonly ICurrentUserProvider _currentUserProvider;
 
-    public UpdateUserCommandHandler(DentisteContext context)
+    public UpdateUserCommandHandler(DentisteContext context, ICurrentUserProvider currentUserProvider)
     {
         _context = context;
+        _currentUserProvider = currentUserProvider;
     }
 
     public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
+        var creatorCabinetId = _currentUserProvider.GetCabinetId();
+        if (creatorCabinetId.HasValue && request.RoleId == 1)
+        {
+            return Result.Failure("Seul l'administrateur système peut affecter le rôle Administrateur.");
+        }
+
+        if (request.RoleId == 4)
+        {
+            return Result.Failure("Les rôles patients ne peuvent pas être affectés directement.");
+        }
+
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken);
         if (user == null)
         {
@@ -66,6 +80,19 @@ public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand>
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        request.EventPayload = new
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Nom = user.Nom,
+            Prenom = user.Prenom,
+            RoleId = user.RoleId,
+            IsActive = user.IsActive,
+            Password = !string.IsNullOrWhiteSpace(request.Password) ? request.Password : string.Empty,
+            CabinetId = user.CabinetId
+        };
 
         return Result.Success();
     }

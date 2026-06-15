@@ -24,6 +24,11 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
+// Hydrate authentication state from storage at startup
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
+authStore.loadFromStorage()
+
 // Configure PrimeVue with Aura Theme Preset and Tailwind Interoperability
 app.use(PrimeVue, {
   theme: {

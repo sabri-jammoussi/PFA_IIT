@@ -10,6 +10,7 @@ using Dentiste.Core.Features.RendezVous.Commands.Update;
 using Dentiste.Core.Features.RendezVous.Commands.Delete;
 using Dentiste.Core.Features.RendezVous.Queries.GetById;
 using Dentiste.Core.Features.RendezVous.Queries.GetAll;
+using Dentiste.Core.Features.RendezVous.Queries.GetPending;
 
 namespace Dentiste.api.Controllers;
 
@@ -100,6 +101,17 @@ public class RendezVousController : ControllerBase
         if (result.IsSuccess)
         {
             return NoContent();
+        }
+        return BadRequest(result.Error);
+    }
+
+    [HttpGet("pending")]
+    public async Task<IActionResult> GetPending()
+    {
+        var result = await _sender.Send(new GetPendingAppointmentsQuery());
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
         }
         return BadRequest(result.Error);
     }

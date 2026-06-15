@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dentiste.Data\Dentiste.Data.csproj" />
+    <ProjectReference Include="..\Dentiste.Notification.Core\Dentiste.Notification.Core.csproj" />
   </ItemGroup>
 
 </Project>

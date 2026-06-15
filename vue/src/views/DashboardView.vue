@@ -31,20 +31,20 @@ const fetchDashboardData = async () => {
     // 1. Fetch today's appointments
     const today = new Date().toISOString().split('T')[0]
     let appUrl = `/rendezvous?startDate=${today}T00:00:00Z&endDate=${today}T23:59:59Z`
-    
+
     // If user is a dentist, filter appointments for them specifically
     if (authStore.isDentist) {
       appUrl += `&dentisteId=${selectedDentistId.value}`
     }
-    
+
     console.log(`[API Request] GET ${appUrl}`)
     const appResponse = await api.get(appUrl)
     console.log(`[API Response] GET ${appUrl} | Status: ${appResponse.status}`, appResponse.data)
     appointments.value = appResponse.data?.items || appResponse.data || []
-    
+
     // Sort appointments chronologically by time
     appointments.value.sort((a, b) => new Date(a.dateHeure) - new Date(b.dateHeure))
-    
+
     totalAppointmentsCount.value = appointments.value.length
     completedAppointmentsCount.value = appointments.value.filter(a => a.statut === 'Confirmé' || a.statut === 'Terminé').length
 
@@ -55,96 +55,35 @@ const fetchDashboardData = async () => {
     patients.value = patientResponse.data?.items || patientResponse.data || []
     totalPatientsCount.value = patientResponse.data?.totalCount || patients.value.length
 
-    // 3. Setup mock/real financial numbers
-    totalRevenue.value = 1450.00 // base mockup
+    // 3. Fetch revenue from factures (sum of montantPaye)
+    console.log(`[API Request] GET /factures`)
+    const facturesResponse = await api.get('/factures')
+    console.log(`[API Response] GET /factures | Status: ${facturesResponse.status}`, facturesResponse.data)
+    const facturesList = facturesResponse.data?.items || facturesResponse.data || []
+    totalRevenue.value = facturesList.reduce((sum, f) => sum + (f.montantPaye || 0), 0)
   } catch (error) {
-    console.warn("[API Error] fetchDashboardData failed. Falling back to mockup:", error)
-    loadMockData()
+    console.error('[API Error] fetchDashboardData failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de chargement',
+      detail: 'Impossible de récupérer les données du tableau de bord.',
+      life: 5000
+    })
   } finally {
     loading.value = false
   }
 }
 
-const loadMockData = () => {
-  // Today's Date
-  const todayStr = new Date().toISOString().split('T')[0]
-
-  // Mock appointments specific to dentist workflow
-  appointments.value = [
-    {
-      id: 101,
-      dateHeure: `${todayStr}T09:00:00`,
-      dureeEstimee: "00:45:00",
-      statut: "Terminé",
-      motif: "Détartrage & Polissage",
-      note: "Patient sensible aux gencives",
-      patientId: 1,
-      patientNomComplet: "Mme. Sophie Martin"
-    },
-    {
-      id: 102,
-      dateHeure: `${todayStr}T10:00:00`,
-      dureeEstimee: "01:00:00",
-      statut: "Terminé",
-      motif: "Pose couronne céramique",
-      note: "Ajustement dent 26",
-      patientId: 2,
-      patientNomComplet: "M. Marc Lefevre"
-    },
-    {
-      id: 103,
-      dateHeure: `${todayStr}T11:15:00`,
-      dureeEstimee: "00:30:00",
-      statut: "Planifié",
-      motif: "Consultation générale",
-      note: "Visite annuelle de contrôle",
-      patientId: 3,
-      patientNomComplet: "Mme. Amine Ben Ali"
-    },
-    {
-      id: 104,
-      dateHeure: `${todayStr}T14:30:00`,
-      dureeEstimee: "00:45:00",
-      statut: "Planifié",
-      motif: "Traitement de canal (dent 14)",
-      note: "Deuxième séance",
-      patientId: 4,
-      patientNomComplet: "M. Luc Durand"
-    },
-    {
-      id: 105,
-      dateHeure: `${todayStr}T16:00:00`,
-      dureeEstimee: "00:30:00",
-      statut: "Planifié",
-      motif: "Extraction dent de sagesse",
-      note: "Radio panoramique consultée",
-      patientId: 5,
-      patientNomComplet: "Mme. Sarah Khalifa"
-    }
-  ]
-
-  patients.value = [
-    { id: 1, nom: "Martin", prenom: "Sophie", telephone: "06 12 34 56 78", email: "sophie.m@mail.com", antecedentsMedicaux: "Asthme" },
-    { id: 2, nom: "Lefevre", prenom: "Marc", telephone: "06 98 76 54 32", email: "m.lefevre@mail.com", antecedentsMedicaux: "Hypertension" },
-    { id: 3, nom: "Ben Ali", prenom: "Amine", telephone: "07 55 44 33 22", email: "a.benali@mail.com", antecedentsMedicaux: "Allergie Pénicilline" },
-    { id: 4, nom: "Durand", prenom: "Luc", telephone: "06 11 22 33 44", email: "luc.durand@mail.com", antecedentsMedicaux: "Diabète Type 2" },
-    { id: 5, nom: "Khalifa", prenom: "Sarah", telephone: "07 88 99 00 11", email: "s.khalifa@mail.com", antecedentsMedicaux: null }
-  ]
-
-  totalAppointmentsCount.value = 5
-  completedAppointmentsCount.value = 2
-  totalPatientsCount.value = 142
-  totalRevenue.value = 860.00
-}
-
 const handleSearch = () => {
   if (searchTerm.value.trim()) {
-    router.push({ name: 'patients', query: { search: searchTerm.value } })
+    const routeName = authStore.isDentist ? 'DentistPatients' : 'SecretaireAdmissions'
+    router.push({ name: routeName, query: { search: searchTerm.value } })
   }
 }
 
 const viewPatient = (id) => {
-  router.push({ name: 'patient-profile', params: { id } })
+  const routeName = (authStore.isDentist || authStore.isSecretary) ? 'DentistPatientProfile' : 'home'
+  router.push({ name: routeName, params: { id } })
 }
 
 const formatTime = (dateStr) => {
@@ -163,7 +102,7 @@ const updateAppointmentStatus = async (appId, status) => {
         detail: `Le statut a été changé en '${status}'.`,
         life: 3000
       })
-      
+
       console.log(`[API Request] PUT /rendezvous/${appId} | New Status: ${status}`)
       const res = await api.put(`/rendezvous/${appId}`, {
         ...appointment,
@@ -172,7 +111,13 @@ const updateAppointmentStatus = async (appId, status) => {
       console.log(`[API Response] PUT /rendezvous/${appId} | Status: ${res.status}`)
     }
   } catch (error) {
-    console.warn("[API Error] updateAppointmentStatus failed. Bypassing to local state:", error)
+    console.error('[API Error] updateAppointmentStatus failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de mise à jour',
+      detail: 'Impossible de mettre à jour le statut du rendez-vous.',
+      life: 5000
+    })
   }
 }
 
@@ -180,6 +125,7 @@ onMounted(() => {
   fetchDashboardData()
 })
 </script>
+
 
 <template>
   <div class="space-y-8 animate-fade-in font-sans">
@@ -314,7 +260,7 @@ onMounted(() => {
               <p class="text-[11px] text-slate-400 font-medium mt-0.5">Cliquez sur un patient pour ouvrir son dossier médical.</p>
             </div>
             <router-link 
-              :to="{name: 'appointments'}"
+              :to="{name: authStore.isSecretary ? 'SecretaireAgenda' : 'home'}"
               class="text-xs text-sky-600 hover:text-sky-700 font-bold flex items-center gap-1.5 cursor-pointer"
             >
               <span>Voir l'agenda complet</span>
@@ -410,7 +356,7 @@ onMounted(() => {
           <h3 class="text-sm font-extrabold text-slate-900 tracking-tight mb-4">Actions Immédiates</h3>
           <div class="grid grid-cols-2 gap-3">
             <router-link
-              :to="{ name: 'appointments', query: { new: 'true' } }"
+              :to="{ name: authStore.isSecretary ? 'SecretaireAgenda' : 'home', query: { new: 'true' } }"
               class="p-4 bg-slate-50 hover:bg-sky-50/20 border border-slate-100 hover:border-sky-200 text-center rounded-xl transition-all group cursor-pointer block"
             >
               <div class="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mx-auto mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
@@ -420,7 +366,7 @@ onMounted(() => {
             </router-link>
 
             <router-link
-              :to="{ name: 'patients', query: { add: 'true' } }"
+              :to="{ name: authStore.isDentist ? 'DentistPatients' : (authStore.isSecretary ? 'SecretaireAdmissions' : 'home'), query: { add: 'true' } }"
               class="p-4 bg-slate-50 hover:bg-indigo-50/20 border border-slate-100 hover:border-indigo-200 text-center rounded-xl transition-all group cursor-pointer block"
             >
               <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
@@ -453,7 +399,7 @@ onMounted(() => {
             </div>
           </div>
           <router-link 
-            :to="{name: 'patients'}" 
+            :to="{name: authStore.isDentist ? 'DentistPatients' : (authStore.isSecretary ? 'SecretaireAdmissions' : 'home')}" 
             class="text-[10px] text-sky-600 hover:text-sky-700 font-bold block text-center mt-4 uppercase tracking-wider cursor-pointer"
           >
             Afficher tous les patients

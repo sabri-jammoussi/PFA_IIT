@@ -104,69 +104,16 @@ const fetchProfileData = async () => {
     console.log(`[API Response] GET /ordonnances | Status: ${ordonnancesRes.status}`, ordonnancesRes.data)
     ordonnances.value = ordonnancesRes.data?.items || ordonnancesRes.data || []
   } catch (error) {
-    console.warn("[API Error] fetchProfileData failed. Falling back to mock data:", error)
-    loadMockClinicalDossier()
+    console.error('[API Error] fetchProfileData failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de chargement',
+      detail: 'Impossible de charger le dossier clinique du patient.',
+      life: 5000
+    })
   } finally {
     loading.value = false
   }
-}
-
-const loadMockClinicalDossier = () => {
-  patient.value = {
-    id: patientId,
-    nom: "Martin",
-    prenom: "Sophie",
-    dateNaissance: "1988-04-12",
-    telephone: "06 12 34 56 78",
-    email: "sophie.m@mail.com",
-    adresse: "15 Rue de Tunis, Sfax",
-    antecedentsMedicaux: "Asthme léger, Allergie au latex",
-    groupSanguin: "A+"
-  }
-
-  medicalActs.value = [
-    { id: 1, libelle: "Consultation de contrôle", tarifDeBase: 50.00, codeNomenclature: "C" },
-    { id: 2, libelle: "Détartrage & polissage", tarifDeBase: 80.00, codeNomenclature: "SC12" },
-    { id: 3, libelle: "Restauration Composite (1 face)", tarifDeBase: 90.00, codeNomenclature: "SC20" },
-    { id: 4, libelle: "Traitement de canal (Dents antérieures)", tarifDeBase: 150.00, codeNomenclature: "HB04" },
-    { id: 5, libelle: "Extraction dentaire simple", tarifDeBase: 100.00, codeNomenclature: "HB12" },
-    { id: 6, libelle: "Couronne céramo-métallique", tarifDeBase: 650.00, codeNomenclature: "SPR50" }
-  ]
-
-  // Mock treatments
-  soinsEffectues.value = [
-    {
-      id: 201,
-      numeroDent: 14,
-      faceDentaire: "O",
-      prixApplique: 90.00,
-      notes: "Carie profonde nettoyée, obturation composite effectuée.",
-      consultationDate: "2026-02-14T10:30:00",
-      acteMedicalLibelle: "Restauration Composite (1 face)"
-    },
-    {
-      id: 202,
-      numeroDent: 46,
-      faceDentaire: "V",
-      prixApplique: 150.00,
-      notes: "Traitement endodontique. Obturation canalaire étanche.",
-      consultationDate: "2026-03-22T09:15:00",
-      acteMedicalLibelle: "Traitement de canal (Dents antérieures)"
-    },
-    {
-      id: 203,
-      numeroDent: 11,
-      faceDentaire: "M",
-      prixApplique: 50.00,
-      notes: "Polissage esthétique suite à léger éclat.",
-      consultationDate: "2026-05-18T14:00:00",
-      acteMedicalLibelle: "Consultation de contrôle"
-    }
-  ]
-
-  ordonnances.value = [
-    { id: 1, dateEmission: "2026-03-22T09:15:00", traitement: "Amoxicilline 500mg (1g x2/jour pendant 5 jours) + Paracétamol 1g (si douleur, max 3g/jour)", patientNomComplet: "Sophie Martin" }
-  ]
 }
 
 const onActeSelect = () => {
@@ -235,20 +182,13 @@ const handleAddSoin = async () => {
     // Reset form notes
     newSoinForm.value.notes = ''
   } catch (error) {
-    // Simulate local success on failure
-    const act = medicalActs.value.find(a => a.id === newSoinForm.value.acteMedicalId)
-    const mockNew = {
-      id: Date.now(),
-      numeroDent: selectedTooth.value,
-      faceDentaire: newSoinForm.value.faceDentaire,
-      prixApplique: newSoinForm.value.prixApplique,
-      notes: newSoinForm.value.notes,
-      consultationDate: new Date().toISOString(),
-      acteMedicalLibelle: act?.libelle || "Autre soin"
-    }
-    soinsEffectues.value.push(mockNew)
-    toast.add({ severity: 'success', summary: 'Soin simulé', detail: 'Soin enregistré localement sur la dent ' + selectedTooth.value, life: 3000 })
-    newSoinForm.value.notes = ''
+    console.error('[API Error] handleAddSoin failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur d\'enregistrement',
+      detail: 'Impossible d\'enregistrer l\'acte clinique sur la dent ' + selectedTooth.value,
+      life: 5000
+    })
   } finally {
     savingSoin.value = false
   }
@@ -283,7 +223,7 @@ onMounted(() => {
     <!-- Profile Header Banner -->
     <div class="flex items-center gap-4">
       <button 
-        @click="router.push({ name: 'patients' })" 
+        @click="router.push({ name: 'DentistPatients' })" 
         class="w-9 h-9 rounded-lg hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/50 flex items-center justify-center cursor-pointer transition-colors shadow-sm bg-slate-50"
       >
         <i class="pi pi-chevron-left text-xs font-bold"></i>
@@ -360,7 +300,7 @@ onMounted(() => {
             Schéma Dentaire (FDI)
           </button>
           <button 
-            v-if="authStore.role !== 'Secretaire'"
+            v-if="authStore.role !== 3"
             @click="activeTab = 'history'"
             class="px-4 py-3.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer"
             :class="[activeTab === 'history' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-400 hover:text-slate-600']"
@@ -368,7 +308,7 @@ onMounted(() => {
             Historique des Soins
           </button>
           <button 
-            v-if="authStore.role !== 'Secretaire'"
+            v-if="authStore.role !== 3"
             @click="activeTab = 'prescriptions'"
             class="px-4 py-3.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer"
             :class="[activeTab === 'prescriptions' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-400 hover:text-slate-600']"
@@ -503,7 +443,7 @@ onMounted(() => {
           </div>
 
           <!-- Bottom: Selected tooth history or add new soin -->
-          <div v-if="authStore.role !== 'Secretaire'" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div v-if="authStore.role !== 3" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             
             <!-- Selected Tooth History -->
             <div class="border border-slate-200/60 rounded-xl p-5 bg-slate-50/20">

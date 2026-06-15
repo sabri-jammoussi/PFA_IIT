@@ -46,4 +46,10 @@ public class PatientDao
     public ICollection<RendezVousDao> RendezVous { get; set; } = new List<RendezVousDao>();
     public ICollection<ConsultationDao> Consultations { get; set; } = new List<ConsultationDao>();
     public ICollection<FactureDao> Factures { get; set; } = new List<FactureDao>();
+
+    // Multi-tenant Foreign Key
+    [Required]
+    [Column("PAT_CABINET_ID")]
+    public int CabinetId { get; set; }
+    public CabinetDao Cabinet { get; set; } = null!;
 }

@@ -33,24 +33,16 @@ const fetchActs = async () => {
     console.log(`[API Response] GET /actes-medicaux | Status: ${res.status}`, res.data)
     acts.value = res.data?.items || res.data || []
   } catch (error) {
-    console.warn("[API Error] fetchActs failed, falling back to mockups:", error)
-    loadMockActs()
+    console.error('[API Error] fetchActs failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de chargement',
+      detail: 'Impossible de récupérer le catalogue des actes médicaux.',
+      life: 5000
+    })
   } finally {
     loading.value = false
   }
-}
-
-const loadMockActs = () => {
-  acts.value = [
-    { id: 1, codeNomenclature: "C", libelle: "Consultation générale & Diagnostic buccal", tarifDeBase: 50.00 },
-    { id: 2, codeNomenclature: "SC12", libelle: "Détartrage, nettoyage prophylactique et polissage", tarifDeBase: 80.00 },
-    { id: 3, codeNomenclature: "SC20", libelle: "Restauration carie composite direct (1 face)", tarifDeBase: 90.00 },
-    { id: 4, codeNomenclature: "HB04", libelle: "Traitement endodontique canalaire (dent antérieure)", tarifDeBase: 150.00 },
-    { id: 5, codeNomenclature: "HB08", libelle: "Traitement endodontique canalaire (dent postérieure)", tarifDeBase: 220.00 },
-    { id: 6, codeNomenclature: "HB12", libelle: "Extraction dentaire simple non chirurgicale", tarifDeBase: 100.00 },
-    { id: 7, codeNomenclature: "SPR50", libelle: "Pose de couronne unitaire céramo-métallique", tarifDeBase: 650.00 },
-    { id: 8, codeNomenclature: "SPR75", libelle: "Implant dentaire titane de base (hors couronne)", tarifDeBase: 1200.00 }
-  ]
 }
 
 const openCreate = () => {
@@ -92,18 +84,13 @@ const handleSave = async (formData) => {
     closeDialog()
     fetchActs()
   } catch (error) {
-    console.warn("[API Error] save act failed. Simulating local success:", error)
-    if (isEdit) {
-      const index = acts.value.findIndex(a => a.id === formData.id)
-      if (index !== -1) {
-        acts.value[index] = { ...acts.value[index], ...payload }
-      }
-    } else {
-      const newId = acts.value.length ? Math.max(...acts.value.map(a => a.id)) + 1 : 1
-      acts.value.push({ id: newId, ...payload })
-    }
-    toast.add({ severity: 'success', summary: 'Succès simulé', detail: 'Modifications enregistrées localement.', life: 3000 })
-    closeDialog()
+    console.error('[API Error] save act failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de sauvegarde',
+      detail: isEdit ? "Impossible de modifier l'acte médical." : "Impossible de créer le nouvel acte médical.",
+      life: 5000
+    })
   } finally {
     saving.value = false
   }
@@ -126,9 +113,13 @@ const confirmDelete = async () => {
     toast.add({ severity: 'success', summary: 'Acte supprimé', detail: "L'acte a été retiré du catalogue.", life: 3000 })
     fetchActs()
   } catch (error) {
-    console.warn("[API Error] delete act failed. Simulating local delete:", error)
-    acts.value = acts.value.filter(a => a.id !== id)
-    toast.add({ severity: 'info', summary: 'Suppression locale', detail: 'Acte retiré localement.', life: 3000 })
+    console.error('[API Error] delete act failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur de suppression',
+      detail: "Impossible de supprimer l'acte médical.",
+      life: 5000
+    })
   } finally {
     actIdToDelete.value = null
   }

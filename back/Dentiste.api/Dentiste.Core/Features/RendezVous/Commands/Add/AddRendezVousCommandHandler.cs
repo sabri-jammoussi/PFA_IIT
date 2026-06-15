@@ -12,10 +12,12 @@ namespace Dentiste.Core.Features.RendezVous.Commands.Add;
 public class AddRendezVousCommandHandler : ICommandHandler<AddRendezVousCommand, int>
 {
     private readonly DentisteContext _context;
+    private readonly Dentiste.Core.Infrastructure.Security.ICurrentUserProvider _currentUserProvider;
 
-    public AddRendezVousCommandHandler(DentisteContext context)
+    public AddRendezVousCommandHandler(DentisteContext context, Dentiste.Core.Infrastructure.Security.ICurrentUserProvider currentUserProvider)
     {
         _context = context;
+        _currentUserProvider = currentUserProvider;
     }
 
     public async Task<Result<int>> Handle(AddRendezVousCommand request, CancellationToken cancellationToken)
@@ -45,6 +47,15 @@ public class AddRendezVousCommandHandler : ICommandHandler<AddRendezVousCommand,
 
         _context.RendezVous.Add(rdv);
         await _context.SaveChangesAsync(cancellationToken);
+
+        var currentUserId = _currentUserProvider.GetUserId() ?? 1;
+        request.EventPayload = new
+        {
+            RendezVousId = rdv.Id,
+            DentisteId = request.DentisteId,
+            PatientId = request.PatientId,
+            CreatedBy = currentUserId
+        };
 
         return Result.Success(rdv.Id);
     }

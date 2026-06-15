@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Dentiste.Data;
 using Dentiste.Core.Features.Patients;
 using Dentiste.Core.Features.Patients.Commands.Add;
+using Dentiste.Core.Features.Patients.Commands.Invite;
 using Dentiste.Core.Features.Patients.Commands.Update;
 using Dentiste.Core.Features.Patients.Commands.Delete;
 using Dentiste.Core.Features.Patients.Queries.GetById;
@@ -55,6 +56,17 @@ public class PatientsController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] AddPatientCommand command)
+    {
+        var result = await _sender.Send(command);
+        if (result.IsSuccess)
+        {
+            return CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value);
+        }
+        return BadRequest(result.Error);
+    }
+
+    [HttpPost("invite")]
+    public async Task<IActionResult> Invite([FromBody] InvitePatientCommand command)
     {
         var result = await _sender.Send(command);
         if (result.IsSuccess)

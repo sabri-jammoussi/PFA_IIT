@@ -34,4 +34,9 @@ public class AuditLogDao
 
     [Column("AUD_NEW_VALUES")]
     public string? NewValues { get; set; } // Les nouvelles valeurs (JSON)
+
+    // Multi-tenant Foreign Key
+    [Column("AUD_CABINET_ID")]
+    public int? CabinetId { get; set; }
+    public CabinetDao? Cabinet { get; set; }
 }

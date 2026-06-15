@@ -5,16 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Dentiste.Core.Messaging;
 using Dentiste.Core.Shared;
 using Dentiste.Data.Infrastructure.EF;
+using Dentiste.Core.Infrastructure.Security;
 
 namespace Dentiste.Core.Features.RendezVous.Commands.Update;
 
 public class UpdateRendezVousCommandHandler : ICommandHandler<UpdateRendezVousCommand>
 {
     private readonly DentisteContext _context;
+    private readonly ICurrentUserProvider _currentUserProvider;
 
-    public UpdateRendezVousCommandHandler(DentisteContext context)
+    public UpdateRendezVousCommandHandler(DentisteContext context, ICurrentUserProvider currentUserProvider)
     {
         _context = context;
+        _currentUserProvider = currentUserProvider;
     }
 
     public async Task<Result> Handle(UpdateRendezVousCommand request, CancellationToken cancellationToken)
@@ -46,6 +49,16 @@ public class UpdateRendezVousCommandHandler : ICommandHandler<UpdateRendezVousCo
         rdv.DentisteId = request.DentisteId;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        var currentUserId = _currentUserProvider.GetUserId() ?? 0;
+        request.EventPayload = new
+        {
+            RendezVousId = rdv.Id,
+            DentisteId = rdv.DentisteId,
+            PatientId = rdv.PatientId,
+            Statut = rdv.Statut,
+            CreatedBy = currentUserId
+        };
 
         return Result.Success();
     }
