@@ -4,7 +4,22 @@ import { defineStore } from 'pinia'
 export const useNotificationsStore = defineStore('notifications', {
   state: () => ({
     notifications: [],
-    notificationsCount: 0
+    notificationsCount: 0,
+    // Notification preferences matching backend domains and types
+    rendezVousNotifications: true,
+    rendezVousCreation: true,
+    rendezVousMiseAJour: true,
+    rendezVousInformation: true,
+
+    factureNotifications: true,
+    factureCreation: true,
+    factureMiseAJour: true,
+    factureInformation: true,
+
+    patientNotifications: true,
+    patientCreation: true,
+    patientMiseAJour: true,
+    patientInformation: true
   }),
 
   getters: {

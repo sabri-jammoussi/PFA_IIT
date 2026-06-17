@@ -1,12 +1,12 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import * as signalR from '@microsoft/signalr'
 import { useNotificationsStore } from '@/stores/notifications'
 import NotificationsSidebar from '@/components/Notifications/NotificationsSidebar.vue'
-import useSignalx from '@/utilities/useSignalx'
+import UserProfilePicture from '@/components/UserProfilePicture.vue'
+
 
 const router = useRouter()
 const route = useRoute()
@@ -31,23 +31,9 @@ const notificationsStore = useNotificationsStore()
 const unreadCount = computed(() => notificationsStore.notificationsCount)
 const notificationsSidebarVisible = ref(false)
 
-const { connection } = useSignalx('MainLayout', 'notif')
-
-const handleReceiveMessage = async () => {
-  await notificationsStore.refreshNotifications()
-}
-
 onMounted(async () => {
-  connection.on('ReceiveMessage', handleReceiveMessage)
   if (authStore.isAuthenticated) {
     await notificationsStore.refreshNotifications()
-  }
-})
-
-onBeforeUnmount(async () => {
-  connection.off('ReceiveMessage', handleReceiveMessage)
-  if (connection.state !== signalR.HubConnectionState.Disconnected) {
-    await connection.stop()
   }
 })
 
@@ -231,9 +217,6 @@ const markAllNotificationsRead = () => {
 
 <template>
   <div class="min-h-screen flex bg-slate-100 font-sans text-slate-800 relative">
-    
-    <!-- Toast overlay -->
-    <PToast />
 
     <!-- Notifications Sidebar Drawer -->
     <NotificationsSidebar v-model:visible="notificationsSidebarVisible" />
@@ -313,9 +296,15 @@ const markAllNotificationsRead = () => {
 
         <!-- Session Badge -->
         <div class="flex items-center gap-3 p-2 rounded-lg">
-          <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0 text-slate-200 font-bold text-xs shadow-inner uppercase">
-            {{ authStore.user?.prenom?.charAt(0) || '' }}{{ authStore.user?.nom?.charAt(0) || '' }}
-          </div>
+          <UserProfilePicture
+            v-if="authStore.user?.id"
+            :userId="authStore.user.id"
+            :shortNameUser="(authStore.user.prenom?.charAt(0) || '') + (authStore.user.nom?.charAt(0) || '')"
+            :avatarColeur="'#334155'"
+            :allowEdit="false"
+            size="32px"
+            :refreshPic="authStore.userImageVersion"
+          />
           <div v-show="sidebarOpen" class="overflow-hidden flex-1 min-w-0">
             <p class="text-xs font-bold text-slate-200 truncate leading-normal">{{ userFullName }}</p>
             <p class="text-[10px] text-slate-500 font-bold truncate tracking-wider uppercase mt-0.5">{{ authStore.roleName }}</p>
@@ -382,9 +371,15 @@ const markAllNotificationsRead = () => {
               @click="userDropdownOpen = !userDropdownOpen; notificationDropdownOpen = false"
               class="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center font-bold text-sm shadow-sm uppercase border border-sky-100">
-                {{ authStore.user?.prenom?.charAt(0) || '' }}{{ authStore.user?.nom?.charAt(0) || '' }}
-              </div>
+              <UserProfilePicture
+                v-if="authStore.user?.id"
+                :userId="authStore.user.id"
+                :shortNameUser="(authStore.user.prenom?.charAt(0) || '') + (authStore.user.nom?.charAt(0) || '')"
+                :avatarColeur="'#e0f2fe'"
+                :allowEdit="false"
+                size="32px"
+                :refreshPic="authStore.userImageVersion"
+              />
               <div class="hidden sm:flex flex-col text-left">
                 <span class="text-xs font-bold text-slate-800 leading-none">{{ userFullName }}</span>
                 <span class="text-[9px] text-slate-400 font-bold uppercase mt-1 leading-none">{{ userRole }}</span>

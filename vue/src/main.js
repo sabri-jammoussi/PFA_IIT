@@ -7,6 +7,10 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
+// Vue3Toastify import
+import Vue3Toastify from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
+
 // PrimeVue imports
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
@@ -23,6 +27,10 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+app.use(Vue3Toastify, {
+  autoClose: 5000,
+  position: 'top-center'
+})
 
 // Hydrate authentication state from storage at startup
 import { useAuthStore } from '@/stores/auth'

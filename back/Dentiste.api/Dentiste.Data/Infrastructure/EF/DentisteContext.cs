@@ -82,6 +82,7 @@ public class DentisteContext : DbContext
     // Configuration système
     public DbSet<OptionDao> Options { get; set; }
     public DbSet<ConfigurationCabinetDao> ConfigurationsCabinets { get; set; }
+    public DbSet<ImageVersionDao> ImageVersions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

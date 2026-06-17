@@ -28,5 +28,8 @@ public class CabinetDao
     [Column("CAB_IS_ACTIVE")]
     public bool IsSubscriptionActive { get; set; } = true;
 
+    [Column("CAB_CLOUDINARY_FOLDER")]
+    public string? CloudinaryFolder { get; set; }
+
     public ICollection<UserDao> Users { get; set; } = new List<UserDao>();
 }
