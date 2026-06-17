@@ -1,6 +1,4 @@
 using System;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +13,13 @@ public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand>
 {
     private readonly DentisteContext _context;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UpdateUserCommandHandler(DentisteContext context, ICurrentUserProvider currentUserProvider)
+    public UpdateUserCommandHandler(DentisteContext context, ICurrentUserProvider currentUserProvider, IPasswordHasher passwordHasher)
     {
         _context = context;
         _currentUserProvider = currentUserProvider;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -72,15 +72,18 @@ public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand>
         user.IsActive = request.IsActive;
         user.RoleId = request.RoleId;
 
-        if (!string.IsNullOrWhiteSpace(request.Password))
+        var passwordChanged = !string.IsNullOrWhiteSpace(request.Password);
+        if (passwordChanged)
         {
             var salt = Guid.NewGuid().ToString("N");
             user.PasswordSalt = salt;
-            user.PasswordHash = HashPassword(request.Password, salt);
+            user.PasswordHash = _passwordHasher.Hash(request.Password!, salt);
         }
 
         await _context.SaveChangesAsync(cancellationToken);
 
+        // NOTE: never put the plaintext password on the background-job payload (it would be
+        // persisted in the Hangfire SQL tables). We only signal that it changed.
         request.EventPayload = new
         {
             Id = user.Id,
@@ -90,19 +93,10 @@ public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand>
             Prenom = user.Prenom,
             RoleId = user.RoleId,
             IsActive = user.IsActive,
-            Password = !string.IsNullOrWhiteSpace(request.Password) ? request.Password : string.Empty,
+            PasswordChanged = passwordChanged,
             CabinetId = user.CabinetId
         };
 
         return Result.Success();
-    }
-
-    private static string HashPassword(string password, string salt)
-    {
-        using var sha256 = SHA256.Create();
-        var saltedPassword = password + salt;
-        var bytes = Encoding.UTF8.GetBytes(saltedPassword);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
     }
 }

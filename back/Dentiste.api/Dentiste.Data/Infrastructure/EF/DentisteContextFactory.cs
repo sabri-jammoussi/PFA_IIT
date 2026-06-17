@@ -49,9 +49,17 @@ public class DentisteContextFactory : IDesignTimeDbContextFactory<DentisteContex
             // Fallback si la lecture échoue
         }
 
-        // Utilise la chaîne de connexion dynamique ou celle par défaut
-        optionsBuilder.UseSqlServer(
-            connectionString ?? "Server=.;Database=dentiste_db2;User Id=sa;Password=123456.aA;TrustServerCertificate=True;");
+        // Fallback sur la variable d'environnement (jamais de secret en dur dans le code).
+        connectionString ??= Environment.GetEnvironmentVariable("ConnectionStrings__APP");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "No design-time connection string found. Set it in appsettings.Development.json " +
+                "(ConnectionStrings:APP) or the ConnectionStrings__APP environment variable.");
+        }
+
+        optionsBuilder.UseSqlServer(connectionString);
 
         return new DentisteContext(optionsBuilder.Options);
     }

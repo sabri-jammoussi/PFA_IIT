@@ -174,18 +174,12 @@ onMounted(() => {
             <!-- Content -->
             <div class="flex-1 min-w-0">
               <div class="flex justify-between items-baseline gap-2 mb-1">
-                <span 
-                  class="text-xs font-semibold text-slate-800 truncate"
-                  v-html="item.title"
-                ></span>
+                <span class="text-xs font-semibold text-slate-800 truncate">{{ item.title }}</span>
                 <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">
                   {{ formatDateTime(item.dateRappel) }}
                 </span>
               </div>
-              <p 
-                class="text-xs text-slate-500 leading-normal" 
-                v-html="item.description"
-              ></p>
+              <p class="text-xs text-slate-500 leading-normal whitespace-pre-line">{{ item.description }}</p>
             </div>
           </div>
         </div>

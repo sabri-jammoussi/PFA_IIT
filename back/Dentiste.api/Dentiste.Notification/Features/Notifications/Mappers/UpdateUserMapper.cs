@@ -13,7 +13,7 @@ namespace Dentiste.Notification.Features.Notifications.Mappers
                 Id = (int)payload.Id,
                 Username = (string)payload.Username,
                 Email = (string)payload.Email,
-                Password = (string)payload.Password,
+                PasswordChanged = (bool)payload.PasswordChanged,
                 Nom = (string)payload.Nom,
                 Prenom = (string)payload.Prenom,
                 RoleId = (int)payload.RoleId,

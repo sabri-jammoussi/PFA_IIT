@@ -1,6 +1,16 @@
 import api from '@/services/api'
 import { defineStore } from 'pinia'
 
+// Single source of truth for the persisted JWT.
+export const TOKEN_KEY = 'denti_token'
+// Legacy keys are no longer written; listed only so logout/expiry fully clears old sessions.
+const LEGACY_AUTH_KEYS = ['auth_token', 'user_role', 'cabinet_id', 'cabinet_name']
+
+export function clearStoredAuth() {
+  localStorage.removeItem(TOKEN_KEY)
+  LEGACY_AUTH_KEYS.forEach((k) => localStorage.removeItem(k))
+}
+
 // Utility function to decode JWT payload in the browser
 function decodeJwt(token) {
   try {
@@ -91,12 +101,10 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       this.loading = true
       this.error = null
-      console.log(`[API Request] POST /api/auth/login | Username: "${username}"`)
       try {
         const response = await api.post('/auth/login', { username, password })
-        console.log('[API Response] POST /api/auth/login | Success:', response.data)
         const token = response.data?.token || response.data?.Token
-        
+
         if (!token) {
           throw new Error('Réponse d\'authentification incomplète (token manquant).')
         }
@@ -104,19 +112,12 @@ export const useAuthStore = defineStore('auth', {
         this.token = token
         this.user = mapTokenToUser(token)
 
-        localStorage.setItem('denti_token', token)
+        localStorage.setItem(TOKEN_KEY, token)
 
-        // SaaS storage restructure
-        localStorage.setItem('auth_token', token)
-        localStorage.setItem('user_role', this.roleName)
-        localStorage.setItem('cabinet_id', this.user?.cabinetId || '')
-        localStorage.setItem('cabinet_name', this.user?.cabinetName || '')
-        
         await this.initImages()
 
         return { success: true }
       } catch (err) {
-        console.error('[API Response Error] POST /api/auth/login | Failed:', err)
         this.error = err.response?.data?.error || err.message || 'Identifiants invalides ou serveur indisponible.'
         return { success: false, error: this.error }
       } finally {
@@ -126,28 +127,22 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       this.loading = true
-      console.log('[API Request] POST /api/auth/logout')
       try {
         // Attempt backend logout to blacklist the JWT in Redis
-        const response = await api.post('/auth/logout')
-        console.log('[API Response] POST /api/auth/logout | Success:', response.data)
-      } catch (err) {
-        console.warn('[API Response Error] POST /api/auth/logout | Failed (likely token blacklisted/expired):', err)
+        await api.post('/auth/logout')
+      } catch {
+        // Token is likely already blacklisted/expired — ignore and clear locally.
       } finally {
         // Always clean local state regardless of server response
         this.token = null
         this.user = null
-        localStorage.removeItem('denti_token')
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user_role')
-        localStorage.removeItem('cabinet_id')
-        localStorage.removeItem('cabinet_name')
+        clearStoredAuth()
         this.loading = false
       }
     },
 
     loadFromStorage() {
-      const token = localStorage.getItem('denti_token')
+      const token = localStorage.getItem(TOKEN_KEY)
       if (token) {
         this.token = token
         this.user = mapTokenToUser(token)

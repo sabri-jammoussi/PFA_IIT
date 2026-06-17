@@ -1,1 +1,11 @@
 # Local planning / scratch notes — not committed to the shared repo
+
+# Local secrets — never commit. Use the *.example.json templates instead.
+appsettings.Development.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Build output
+**/bin/
+**/obj/
+logs/

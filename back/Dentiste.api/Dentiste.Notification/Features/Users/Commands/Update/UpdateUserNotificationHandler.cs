@@ -48,8 +48,10 @@ namespace Dentiste.Notification.Features.Users.Commands.Update
                 Nom = request.Nom,
                 Username = request.Username,
                 Email = request.Email,
-                Password = request.Password,
-                HasNewPassword = !string.IsNullOrEmpty(request.Password),
+                // Plaintext password is intentionally no longer transported to the notification
+                // pipeline; we only tell the user that it changed (templates show a reset hint).
+                Password = string.Empty,
+                HasNewPassword = request.PasswordChanged,
                 IsActive = request.IsActive
             };
 

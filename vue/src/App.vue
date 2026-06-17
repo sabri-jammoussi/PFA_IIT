@@ -26,13 +26,14 @@ const requestNotificationPermission = async () => {
   }
 }
 
-// Strip HTML tags and decode HTML entities for plain text display
+// Strip HTML tags and decode HTML entities for plain text display.
+// Uses DOMParser (inert document) so no scripts run and no <img onerror>/resource
+// loads can be triggered by untrusted notification content.
 const stripHtml = (html) => {
   if (!html) return ''
   html = html.replace(/<br\s*\/?>/gi, '\n')
-  const tmp = document.createElement('div')
-  tmp.innerHTML = html
-  let text = tmp.textContent || tmp.innerText || ''
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  let text = doc.body.textContent || ''
   return text
     .split(/\n/)
     .map((line) => line.replace(/\s+/g, ' ').trim())
@@ -42,7 +43,8 @@ const stripHtml = (html) => {
 
 // Show toast notification as fallback using vue3-toastify (matches reference App.vue style)
 const showToastNotification = (title, body) => {
-  toast.info(`${title}\n${body}`, {
+  // Render as plain text only — never interpret backend content as HTML (XSS).
+  toast.info(`${stripHtml(title)}\n${stripHtml(body)}`, {
     icon: '🔔',
     autoClose: 10000,
     containerId: 'notification',
@@ -50,7 +52,7 @@ const showToastNotification = (title, body) => {
     position: 'bottom-right',
     transition: 'slide',
     bodyClassName: 'custom-toast-body',
-    dangerouslyHTMLString: true
+    dangerouslyHTMLString: false
   })
 }
 
