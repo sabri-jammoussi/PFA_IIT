@@ -37,9 +37,16 @@ const handleLogin = async () => {
       life: 3000
     })
     
-    // Redirect to the path they tried to access, or dashboard
-    const redirectPath = route.query.redirect || '/'
-    router.push(redirectPath)
+    // Redirect to the path they tried to access, or dashboard.
+    // Only allow internal relative paths to prevent open-redirect attacks
+    // (e.g. ?redirect=https://evil.com or //evil.com).
+    const requested = route.query.redirect
+    const isSafeInternalPath =
+      typeof requested === 'string' &&
+      requested.startsWith('/') &&
+      !requested.startsWith('//') &&
+      !requested.startsWith('/\\')
+    router.push(isSafeInternalPath ? requested : '/')
   } else {
     loginError.value = result.error
     toast.add({

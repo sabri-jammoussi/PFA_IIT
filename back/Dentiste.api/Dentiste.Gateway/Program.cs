@@ -38,7 +38,16 @@ else
 // Add services to the container.
 builder.Services.AddSerilog(config => config.ReadFrom.Configuration(builder.Configuration));
 
-builder.Services.AddCors();
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:5173", "http://localhost:8080" };
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy => policy
+        .WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
 
 builder.Services.AddHealthChecks()
     .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 300, name: "memory", tags: ["system", "memory"]);
@@ -51,11 +60,7 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
-app.UseCors(policy => policy
-    .SetIsOriginAllowed(_ => true)
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials());
+app.UseCors();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {

@@ -1,6 +1,14 @@
 import axios from 'axios'
 import router from '@/router'
 
+const TOKEN_KEY = 'denti_token'
+const LEGACY_AUTH_KEYS = ['auth_token', 'user_role', 'cabinet_id', 'cabinet_name']
+
+function clearStoredAuth() {
+  localStorage.removeItem(TOKEN_KEY)
+  LEGACY_AUTH_KEYS.forEach((k) => localStorage.removeItem(k))
+}
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5094/api',
   headers: {
@@ -11,7 +19,7 @@ const api = axios.create({
 // Request Interceptor: Attach JWT Token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('denti_token')
+    const token = localStorage.getItem(TOKEN_KEY)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -27,9 +35,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear auth tokens
-      localStorage.removeItem('denti_token')
-      
+      // Clear all auth state (token + any legacy keys)
+      clearStoredAuth()
+
       // Redirect to login if not already there
       if (router.currentRoute.value.path !== '/login') {
         router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })

@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,8 +29,13 @@ namespace Dentiste.api
 			builder.Services.AddMediatR(cfg =>
 			{
 				cfg.RegisterServicesFromAssembly(typeof(Dentiste.Core.Messaging.ICommand).Assembly);
+				// Validation runs first so invalid commands never reach handlers or the event behavior.
+				cfg.AddOpenBehavior(typeof(Dentiste.Core.Infrastructure.Behaviors.ValidationBehavior<,>));
 				cfg.AddOpenBehavior(typeof(CommandEventBehavior<,>));
 			});
+
+			// Register all FluentValidation validators from the Core assembly.
+			builder.Services.AddValidatorsFromAssembly(typeof(Dentiste.Core.Messaging.ICommand).Assembly);
 
 			builder.Services.AddKeyedSingleton<JobStorage>("notif", (provider, _) =>
 				new SqlServerStorage(builder.Configuration.GetConnectionString("APP"),
@@ -47,6 +53,15 @@ namespace Dentiste.api
 			// ── JWT Settings ──
 			builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 			var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
+
+			// Fail fast if the signing key is not configured (never ship a default/committed key).
+			if (string.IsNullOrWhiteSpace(jwtSettings.SecurityKey)
+				|| Encoding.UTF8.GetByteCount(jwtSettings.SecurityKey) < 32)
+			{
+				throw new InvalidOperationException(
+					"JWT signing key is missing or too short. Set 'Jwt:SecurityKey' (>= 32 bytes) " +
+					"via environment variable (Jwt__SecurityKey), user-secrets, or appsettings.Development.json.");
+			}
 
 			// ── JWT Authentication ──
 			builder.Services
@@ -91,7 +106,17 @@ namespace Dentiste.api
 			// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 			builder.Services.AddOpenApi();
 
-			builder.Services.AddCors();
+			// ── CORS (restricted to configured frontend origins) ──
+			var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+				?? new[] { "http://localhost:5173", "http://localhost:8080" };
+			builder.Services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(policy => policy
+					.WithOrigins(allowedOrigins)
+					.AllowAnyHeader()
+					.AllowAnyMethod()
+					.AllowCredentials());
+			});
 
 			var app = builder.Build();
 
@@ -101,29 +126,56 @@ namespace Dentiste.api
 				var db = scope.ServiceProvider.GetRequiredService<Dentiste.Data.Infrastructure.EF.DentisteContext>();
 				db.Database.Migrate();
 
-				// Check and seed roles
+				var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+				// Check and seed roles (parameterized via EF, not raw SQL string interpolation)
 				if (!db.Roles.Any())
 				{
-					db.Database.ExecuteSqlRaw(@"
-						INSERT INTO [ROLE] ( ROL_NAME, ROL_DESCRIPTION) VALUES
-						( 'Admin', 'Administrateur système'),
-						('Dentiste', 'Praticien Dentiste'),
-						('Secretaire', 'Secrétariat et accueil'),
-						('Patient', 'Portail Patient')");
+					db.Roles.AddRange(
+						new RoleDao { Name = "Admin", Description = "Administrateur système" },
+						new RoleDao { Name = "Dentiste", Description = "Praticien Dentiste" },
+						new RoleDao { Name = "Secretaire", Description = "Secrétariat et accueil" },
+						new RoleDao { Name = "Patient", Description = "Portail Patient" });
+					db.SaveChanges();
 				}
 
 				// Check and seed admin user
 				if (!db.Users.Any(u => u.RoleId == 1 || u.Username == "admin"))
 				{
 					var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-					var password = "SecurePassword123!";
-					var salt = Guid.NewGuid().ToString("N");
-					var hash = hasher.Hash(password, salt);
 
-					db.Database.ExecuteSqlRaw(
-						"INSERT INTO [USER] (USR_USERNAME, USR_EMAIL, USR_PASSWORD_HASH, USR_PASSWORD_SALT, USR_NOM, USR_PRENOM, USR_IS_ACTIVE, USR_CREATED_AT, USR_ROLE_ID) VALUES " +
-						$"('admin', 'admin@dentiste.tn', '{hash}', '{salt}', 'System', 'Admin', 1, GETDATE(), 1)"
-					);
+					// Admin password comes from configuration/env (Seed:AdminPassword or SEED_ADMIN_PASSWORD).
+					// If none is provided we generate a strong random one and log it once — never a hardcoded constant.
+					var password = builder.Configuration["Seed:AdminPassword"];
+					var generated = false;
+					if (string.IsNullOrWhiteSpace(password))
+					{
+						password = Guid.NewGuid().ToString("N") + "Aa1!";
+						generated = true;
+					}
+
+					var salt = Guid.NewGuid().ToString("N");
+					var admin = new UserDao
+					{
+						Username = "admin",
+						Email = "admin@dentiste.tn",
+						PasswordHash = hasher.Hash(password, salt),
+						PasswordSalt = salt,
+						Nom = "System",
+						Prenom = "Admin",
+						IsActive = true,
+						CreatedAt = DateTime.UtcNow,
+						RoleId = 1
+					};
+					db.Users.Add(admin);
+					db.SaveChanges();
+
+					if (generated)
+					{
+						logger.LogWarning(
+							"Seeded default admin account 'admin' with an auto-generated password: {Password}. " +
+							"Change it immediately and set 'Seed:AdminPassword' to control it.", password);
+					}
 				}
 			}
 
@@ -135,11 +187,7 @@ namespace Dentiste.api
 
 			app.UseHttpsRedirection();
 
-			app.UseCors(policy => policy
-				.SetIsOriginAllowed(_ => true)
-				.AllowAnyHeader()
-				.AllowAnyMethod()
-				.AllowCredentials());
+			app.UseCors();
 
 			// ── Auth pipeline (order matters!) ──
 			app.UseAuthentication();
