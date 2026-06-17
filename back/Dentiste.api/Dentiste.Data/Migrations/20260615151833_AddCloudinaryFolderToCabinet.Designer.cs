@@ -4,6 +4,7 @@ using Dentiste.Data.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dentiste.Data.Migrations
 {
     [DbContext(typeof(DentisteContext))]
-    partial class DentisteContextModelSnapshot : ModelSnapshot
+    [Migration("20260615151833_AddCloudinaryFolderToCabinet")]
+    partial class AddCloudinaryFolderToCabinet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -337,30 +340,6 @@ namespace Dentiste.Data.Migrations
                     b.HasIndex("PatientId");
 
                     b.ToTable("FACTURE");
-                });
-
-            modelBuilder.Entity("Dentiste.Data.Models.ImageVersionDao", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("IV_ID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ImageId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("IV_IM_ID");
-
-                    b.Property<long>("Version")
-                        .HasColumnType("bigint")
-                        .HasColumnName("IV_VERSION");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("IMAGE_VERSION");
                 });
 
             modelBuilder.Entity("Dentiste.Data.Models.NotificationDao", b =>

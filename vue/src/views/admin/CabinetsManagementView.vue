@@ -29,17 +29,17 @@ const fetchCabinets = async () => {
 
 const toggleSubscription = async (cabinet) => {
   processing.value = cabinet.id
-  const targetStatus = !cabinet.IsSubscriptionActive
+  const targetStatus = !cabinet.isSubscriptionActive
   
   console.log(`[API Request] PUT /cabinet/${cabinet.id}/subscription | Status: ${targetStatus}`)
   try {
     await api.put(`/cabinet/${cabinet.id}/subscription`, { isActive: targetStatus })
     
-    cabinet.IsSubscriptionActive = targetStatus
+    cabinet.isSubscriptionActive = targetStatus
     toast.add({
       severity: 'success',
       summary: targetStatus ? 'Licence activée' : 'Licence suspendue',
-      detail: `La souscription de ${cabinet.NomCabinet} a été mise à jour.`,
+      detail: `La souscription de ${cabinet.nomCabinet} a été mise à jour.`,
       life: 3000
     })
   } catch (error) {
@@ -126,24 +126,24 @@ onMounted(() => {
             #{{ cab.id }}
           </div>
           <div class="w-full md:w-1/4 font-extrabold text-slate-900">
-            {{ cab.NomCabinet }}
+            {{ cab.nomCabinet }}
           </div>
           <div class="w-full md:w-1/4 text-slate-550">
-            {{ cab.Adresse || '—' }}
+            {{ cab.adresse || '—' }}
           </div>
           <div class="w-full md:w-1/6 text-slate-500">
-            {{ cab.TelephoneCorporate || '—' }}
+            {{ cab.telephoneCorporate || '—' }}
           </div>
           <div class="w-full md:w-1/8 text-center">
             <span 
               class="px-2.5 py-1 text-[9px] font-bold rounded-full uppercase tracking-wider border"
               :class="[
-                cab.IsSubscriptionActive 
+                cab.isSubscriptionActive 
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
                   : 'bg-rose-50 text-rose-700 border-rose-100'
               ]"
             >
-              {{ cab.IsSubscriptionActive ? 'Actif' : 'Suspendu' }}
+              {{ cab.isSubscriptionActive ? 'Actif' : 'Suspendu' }}
             </span>
           </div>
           <div class="w-full md:w-1/12 flex justify-end">
@@ -152,13 +152,13 @@ onMounted(() => {
               :disabled="processing === cab.id"
               class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border transition-all cursor-pointer shadow-sm flex items-center gap-1"
               :class="[
-                cab.IsSubscriptionActive
+                cab.isSubscriptionActive
                   ? 'border-rose-200 hover:bg-rose-50 text-rose-600'
                   : 'bg-slate-950 hover:bg-slate-800 text-white'
               ]"
             >
               <i v-if="processing === cab.id" class="pi pi-spin pi-spinner text-[9px]"></i>
-              <span v-else>{{ cab.IsSubscriptionActive ? 'Suspendre' : 'Activer' }}</span>
+              <span v-else>{{ cab.isSubscriptionActive ? 'Suspendre' : 'Activer' }}</span>
             </button>
           </div>
         </div>

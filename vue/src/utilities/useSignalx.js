@@ -1,5 +1,5 @@
 import * as signalR from '@microsoft/signalr';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
 const connections = new Map();
@@ -130,22 +130,31 @@ export default function (componentName, hubName) {
     });
 
     const authStore = useAuthStore();
-    const token = authStore.token || localStorage.getItem('denti_token');
-    
-    if (token && connection.state === signalR.HubConnectionState.Disconnected) {
-        connection.start().then(
-            () => {
-                console.log(`${_log} Connection established successfully. ID:`, connection.connectionId);
-                state.value = signalR.HubConnectionState.Connected;
-            },
-            (error) => {
-                console.error(`${_log} Connection failed:`, error);
-                state.value = signalR.HubConnectionState.Disconnected;
+
+    watch(
+        () => authStore.token || localStorage.getItem('denti_token'),
+        (newToken) => {
+            if (newToken && connection.state === signalR.HubConnectionState.Disconnected) {
+                console.log(`${_log} Token found, initiating connection...`);
+                connection.start().then(
+                    () => {
+                        console.log(`${_log} Connection established successfully. ID:`, connection.connectionId);
+                        state.value = connection.state;
+                    },
+                    (error) => {
+                        console.error(`${_log} Connection failed:`, error);
+                        state.value = connection.state;
+                    }
+                );
+            } else if (!newToken && connection.state !== signalR.HubConnectionState.Disconnected) {
+                connection.stop().then(() => {
+                    console.log(`${_log} Connection stopped (no active token).`);
+                    state.value = connection.state;
+                });
             }
-        );
-    } else if (!token) {
-        console.log(`${_log} No token found. Skipping connection.`);
-    }
+        },
+        { immediate: true }
+    );
 
     const wait = async () => {
         await waitForConnected({ connection });

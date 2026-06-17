@@ -113,8 +113,8 @@ onMounted(() => {
             class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-xs"
           >
             <div>
-              <p class="font-extrabold text-slate-850">{{ cab.NomCabinet }}</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">ID: #{{ cab.id }} &bull; {{ cab.Adresse || 'Pas d\'adresse' }}</p>
+              <p class="font-extrabold text-slate-850">{{ cab.nomCabinet }}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">ID: #{{ cab.id }} &bull; {{ cab.adresse || 'Pas d\'adresse' }}</p>
             </div>
             <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-bold border border-emerald-100 uppercase">
               Actif

@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +60,11 @@ namespace Dentiste.Core.Features.SaaS.Commands.RegisterClinic
             // we bypass the global query filter for inserts (they don't need tenant ID since Cabinet isn't tenant-filtered).
             await _context.SaveChangesAsync(cancellationToken);
 
+            // Generate stable unique Cloudinary folder based on registration name and generated Cabinet ID
+            var sanitizedName = SanitizeFolderName(cabinet.NomCabinet);
+            cabinet.CloudinaryFolder = $"cab_{cabinet.Id}_{sanitizedName}";
+            await _context.SaveChangesAsync(cancellationToken);
+
             // 2. Create the owner Doctor user bound to that cabinet
             var salt = Guid.NewGuid().ToString("N");
             var passwordHash = _passwordHasher.Hash(request.DoctorPassword, salt);
@@ -84,6 +90,15 @@ namespace Dentiste.Core.Features.SaaS.Commands.RegisterClinic
             request.CabinetId = cabinet.Id;
 
             return Result.Success(cabinet.Id);
+        }
+
+        private string SanitizeFolderName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "unknown";
+            var sanitized = name.Trim().ToLowerInvariant();
+            sanitized = Regex.Replace(sanitized, @"\s+", "_"); // Replace spaces with underscores
+            sanitized = Regex.Replace(sanitized, @"[^a-z0-9_-]", ""); // Keep only safe chars
+            return sanitized;
         }
     }
 }

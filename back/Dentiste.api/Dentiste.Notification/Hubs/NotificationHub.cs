@@ -77,6 +77,7 @@ namespace Dentiste.Notification.Hubs
             }
 
             var user = await _dbContext.Users
+                .IgnoreQueryFilters()
                 .Include(u => u.Role)
                 .AsNoTracking()
                 .SingleOrDefaultAsync(x => x.Id == userId);

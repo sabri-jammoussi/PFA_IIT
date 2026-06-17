@@ -43,7 +43,8 @@ export const useAuthStore = defineStore('auth', {
       token,
       user: mapTokenToUser(token),
       loading: false,
-      error: null
+      error: null,
+      userImageVersion: 0
     }
   },
 
@@ -111,6 +112,8 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('cabinet_id', this.user?.cabinetId || '')
         localStorage.setItem('cabinet_name', this.user?.cabinetName || '')
         
+        await this.initImages()
+
         return { success: true }
       } catch (err) {
         console.error('[API Response Error] POST /api/auth/login | Failed:', err)
@@ -148,6 +151,22 @@ export const useAuthStore = defineStore('auth', {
       if (token) {
         this.token = token
         this.user = mapTokenToUser(token)
+        this.initImages()
+      }
+    },
+
+    incrementUserImageVersion() {
+      this.userImageVersion++
+    },
+
+    async initImages() {
+      if (!this.isAuthenticated) return
+      try {
+        const { data: options } = await api.get('/images/options')
+        const { initialize } = await import('@/utilities/genUrl')
+        initialize(options)
+      } catch (err) {
+        console.warn('Failed to load image options:', err)
       }
     }
   }

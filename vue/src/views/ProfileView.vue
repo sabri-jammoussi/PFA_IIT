@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
 import api from '@/services/api'
+import UserProfilePicture from '@/components/UserProfilePicture.vue'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -118,9 +119,17 @@ onMounted(() => {
         <div class="bg-white rounded-xl border border-slate-200/65 shadow-sm p-6 flex flex-col items-center text-center relative overflow-hidden">
           <div class="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950/40"></div>
           
-          <!-- Profile Initial Badge -->
-          <div class="relative mt-8 z-10 w-24 h-24 rounded-2xl bg-indigo-50 border-4 border-white flex items-center justify-center text-indigo-600 font-extrabold text-3xl shadow-md uppercase">
-            {{ userProfile.prenom?.charAt(0) || '' }}{{ userProfile.nom?.charAt(0) || '' }}
+          <!-- Profile Picture with Edit capability -->
+          <div class="relative mt-8 z-10">
+            <UserProfilePicture
+              v-if="userProfile.id"
+              :userId="userProfile.id"
+              :shortNameUser="(userProfile.prenom?.charAt(0) || '') + (userProfile.nom?.charAt(0) || '')"
+              :avatarColeur="'#4f46e5'"
+              :allowEdit="true"
+              size="96px"
+              :refreshPic="authStore.userImageVersion"
+            />
           </div>
 
           <h3 class="text-base font-extrabold text-slate-900 tracking-tight mt-4">
