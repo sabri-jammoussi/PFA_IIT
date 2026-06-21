@@ -37,6 +37,13 @@
   --color-emerald-600: #0f766e;
   --color-emerald-700: #115e59;
   --color-emerald-800: #134e4a;
+  
+  /* Brand Specific Exact Colors */
+  --color-brand-mint: #12B09E;
+  --color-brand-mintLight: #E7F7F5;
+  --color-brand-mintDark: #0D8577;
+  --color-brand-bg: #F4F9F6;
+  --color-brand-slateDark: #0F172A;
 }
 
 /* Global animations */

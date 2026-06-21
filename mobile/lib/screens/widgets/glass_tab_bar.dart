@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -45,12 +45,12 @@ class GlassTabBar extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     final List<Color> glassGradient = isDark
-        ? [Colors.white.withValues(alpha: 0.16), Colors.white.withValues(alpha: 0.05)]
-        : [Colors.white.withValues(alpha: 0.75), Colors.white.withValues(alpha: 0.45)];
+        ? [Colors.white.withOpacity(0.16), Colors.white.withOpacity(0.05)]
+        : [Colors.white.withOpacity(0.75), Colors.white.withOpacity(0.45)];
 
     final Color borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.22)
-        : Colors.white.withValues(alpha: 0.70);
+        ? Colors.white.withOpacity(0.22)
+        : Colors.white.withOpacity(0.70);
 
     final int selectedIndex = position.round();
 
@@ -75,7 +75,7 @@ class GlassTabBar extends StatelessWidget {
                 border: Border.all(color: borderColor),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.14),
+                    color: Colors.black.withOpacity(isDark ? 0.40 : 0.14),
                     blurRadius: 24,
                     offset: const Offset(0, 10),
                     spreadRadius: -4,
@@ -100,17 +100,17 @@ class GlassTabBar extends StatelessWidget {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withValues(alpha: 0.16)
-                                : Colors.white.withValues(alpha: 0.60),
+                                ? Colors.white.withOpacity(0.16)
+                                : Colors.white.withOpacity(0.60),
                             borderRadius: BorderRadius.circular(_height),
                             border: Border.all(
                               color: isDark
-                                  ? Colors.white.withValues(alpha: 0.22)
-                                  : Colors.white.withValues(alpha: 0.75),
+                                  ? Colors.white.withOpacity(0.22)
+                                  : Colors.white.withOpacity(0.75),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: accentColor.withValues(alpha: isDark ? 0.18 : 0.12),
+                                color: accentColor.withOpacity(isDark ? 0.18 : 0.12),
                                 blurRadius: 10,
                                 offset: const Offset(0, 2),
                                 spreadRadius: -3,
@@ -162,8 +162,8 @@ class _GlassTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color inactiveColor = isDark
-        ? Colors.white.withValues(alpha: 0.65)
-        : Colors.black.withValues(alpha: 0.55);
+        ? Colors.white.withOpacity(0.65)
+        : Colors.black.withOpacity(0.55);
     final Color contentColor = selected ? accentColor : inactiveColor;
 
     return GestureDetector(

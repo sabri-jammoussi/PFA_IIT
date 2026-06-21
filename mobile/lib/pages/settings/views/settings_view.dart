@@ -45,7 +45,7 @@ class _SettingsViewState extends State<SettingsView> {
                     trailing: Switch(
                       value: c.themeMode == ThemeMode.dark,
                       onChanged: (_) => c.toggleTheme(),
-                      activeThumbColor: DfColors.brandPrimary(context),
+                      activeColor: DfColors.brandPrimary(context),
                     ),
                   ),
                 ),

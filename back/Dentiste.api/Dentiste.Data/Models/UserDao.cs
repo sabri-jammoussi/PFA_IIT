@@ -40,6 +40,12 @@ public class UserDao
     [Column("USR_CREATED_AT")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    [Column("USR_RESET_TOKEN")]
+    public Guid? ResetToken { get; set; }
+
+    [Column("USR_RESET_TOKEN_EXPIRES")]
+    public DateTime? ResetTokenExpiresAt { get; set; }
+
     // Clé Étrangère vers le Rôle
     [Required]
     [Column("USR_ROLE_ID")]

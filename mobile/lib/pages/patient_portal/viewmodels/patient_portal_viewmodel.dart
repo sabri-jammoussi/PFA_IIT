@@ -7,6 +7,8 @@ class PatientPortalViewModel extends GetxController {
   final RxList<MyAppointment> myAppointments = <MyAppointment>[].obs;
   final Rx<MedicalRecordSummary?> medicalRecord =
       Rx<MedicalRecordSummary?>(null);
+  final Rx<FullMedicalRecord?> fullMedicalRecord =
+      Rx<FullMedicalRecord?>(null);
   final RxList<String> availableSlots = <String>[].obs;
   final RxList<Map<String, dynamic>> dentists =
       <Map<String, dynamic>>[].obs;
@@ -30,15 +32,18 @@ class PatientPortalViewModel extends GetxController {
         PatientPortalService.getMyAppointments(),
         PatientPortalService.getMedicalRecord(),
         PatientPortalService.getDentists(),
+        PatientPortalService.getFullMedicalRecord(),
       ]);
       myAppointments.assignAll(results[0] as List<MyAppointment>);
       medicalRecord.value = results[1] as MedicalRecordSummary?;
       dentists.assignAll(results[2] as List<Map<String, dynamic>>);
+      fullMedicalRecord.value = results[3] as FullMedicalRecord?;
     } catch (_) {
     } finally {
       isLoading.value = false;
     }
   }
+
 
   Future<void> loadAvailability() async {
     if (selectedDentisteId.value == 0) return;

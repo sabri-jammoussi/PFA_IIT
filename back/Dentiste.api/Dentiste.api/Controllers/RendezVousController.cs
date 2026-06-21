@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Dentiste.Data;
 using Dentiste.Core.Features.RendezVous;
 using Dentiste.Core.Features.RendezVous.Commands.Add;
@@ -113,6 +114,27 @@ public class RendezVousController : ControllerBase
         {
             return Ok(result.Value);
         }
+        return BadRequest(result.Error);
+    }
+
+    [HttpPost("{id:int}/checkin")]
+    public async Task<IActionResult> CheckIn(
+        int id, 
+        [FromServices] Microsoft.AspNetCore.SignalR.IHubContext<Dentiste.api.Hubs.ClinicHub> hubContext,
+        [FromServices] Dentiste.Data.Infrastructure.ITenantProvider tenantProvider)
+    {
+        var command = new Dentiste.Core.Features.Appointments.Commands.CheckIn.ConfirmPatientArrivalCommand { AppointmentId = id };
+        var result = await _sender.Send(command);
+
+        if (result.IsSuccess)
+        {
+            var cabinetId = tenantProvider.GetCabinetId();
+            var groupName = $"cabinet_{cabinetId}";
+            
+            await hubContext.Clients.Group(groupName).SendAsync("NotifyPatientArrived", result.Value);
+            return Ok(result.Value);
+        }
+
         return BadRequest(result.Error);
     }
 }

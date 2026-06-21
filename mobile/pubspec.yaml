@@ -15,33 +15,33 @@ dependencies:
   get: ^4.6.6
 
   # HTTP & storage
-  http: ^1.6.0
-  flutter_secure_storage: ^9.0.0
-  shared_preferences: ^2.5.5
+  http: any
+  flutter_secure_storage: any
+  shared_preferences: any
 
   # Real-time
-  signalr_netcore: ^1.4.4
+  signalr_netcore: any
 
   # Notifications
-  flutter_local_notifications: ^19.0.0
+  flutter_local_notifications: any
 
   # Localization & date
-  intl: ^0.20.2
+  intl: any
   flutter_localizations:
     sdk: flutter
 
   # Config
-  flutter_dotenv: ^5.1.0
-  package_info_plus: ^8.0.2
+  flutter_dotenv: any
+  package_info_plus: any
 
   # UI
-  cupertino_icons: ^1.0.8
-  shimmer: ^3.0.0
+  cupertino_icons: any
+  shimmer: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  flutter_lints: any
 
 flutter:
   uses-material-design: true
@@ -49,16 +49,16 @@ flutter:
   assets:
     - .env.dev
     - .env.prod
-    - assets/images/
+    # - assets/images/
 
-  fonts:
-    - family: SpaceGrotesk
-      fonts:
-        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/SpaceGrotesk-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
-          weight: 700
+  # fonts:
+  #   - family: SpaceGrotesk
+  #     fonts:
+  #       - asset: assets/fonts/SpaceGrotesk-Regular.ttf
+  #         weight: 400
+  #       - asset: assets/fonts/SpaceGrotesk-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/SpaceGrotesk-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/SpaceGrotesk-Bold.ttf
+  #         weight: 700

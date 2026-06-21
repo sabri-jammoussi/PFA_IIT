@@ -18,6 +18,10 @@ import 'pages/profile/views/profile_view.dart';
 import 'pages/settings/views/settings_view.dart';
 import 'pages/stock/views/stock_view.dart';
 import 'pages/patients/views/patient_profile_view.dart';
+import 'pages/secretaires/views/secretaires_view.dart';
+import 'pages/admin/views/admin_dashboard_view.dart';
+import 'pages/admin/views/cabinets_management_view.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +85,9 @@ class DentiFlowApp extends StatelessWidget {
             '/settings': (_) => const SettingsView(),
             '/stock': (_) => const StockView(),
             '/patient-profile': (_) => const PatientProfileView(),
+            '/staff': (_) => const SecretairesView(),
+            '/admin': (_) => const AdminDashboardView(),
+            '/admin/cabinets': (_) => const CabinetsManagementView(),
           },
         );
       },

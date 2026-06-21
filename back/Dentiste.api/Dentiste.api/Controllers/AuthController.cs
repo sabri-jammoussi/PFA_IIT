@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Dentiste.Core.Features.Auth.Commands.Login;
 using Dentiste.Core.Features.Auth.Commands.Logout;
+using Dentiste.Core.Features.Auth.Commands.ForgetPassword;
 
 namespace Dentiste.api.Controllers;
 
@@ -46,6 +47,18 @@ public class AuthController : ControllerBase
         if (result.IsSuccess)
         {
             return Ok(new { message = "Déconnexion réussie." });
+        }
+        return BadRequest(new { error = result.Error });
+    }
+
+    [HttpPost("forget-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordCommand command)
+    {
+        var result = await _sender.Send(command);
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "Si ce compte existe, un email a été envoyé." });
         }
         return BadRequest(new { error = result.Error });
     }

@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
 import api from '@/services/api'
+import signalRService from '@/services/signalrService'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -317,6 +318,27 @@ watch(selectedPatientId, (newId) => {
 
 onMounted(() => {
   fetchPatients()
+
+  // Real-time integration
+  signalRService.startConnection()
+  signalRService.on('NotifyPatientArrived', (payload) => {
+    if (authStore.user && payload.doctorId === authStore.user.id) {
+      toast.add({
+        severity: 'info',
+        summary: 'Nouveau Patient Arrivé !',
+        detail: `Le patient ${payload.patientName} vient d'arriver en salle d'attente. (${payload.motif || 'Aucun motif précisé'})`,
+        life: 8000
+      })
+      
+      // Auto-switch to the new patient
+      selectedPatientId.value = payload.patientId
+    }
+  })
+})
+
+onUnmounted(() => {
+  // Prevent memory leaks
+  signalRService.off('NotifyPatientArrived')
 })
 </script>
 

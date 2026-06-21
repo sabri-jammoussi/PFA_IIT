@@ -2,7 +2,7 @@
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 import api from '@/services/api'
 import { useToast } from 'primevue/usetoast'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppointmentAddDialog from './AppointmentAddDialog.vue'
 
@@ -13,6 +13,9 @@ const loading = ref(false)
 const appointments = ref([])
 const patients = ref([])
 const dentists = ref([])
+
+const currentTime = ref(new Date())
+let timeInterval = null
 const dentistOptions = computed(() => dentists.value.map(d => ({
   id: d.id,
   label: `Dr. ${d.prenom} ${d.nom} (${d.spec})`
@@ -195,17 +198,58 @@ const confirmCancel = async () => {
   }
 }
 
+const confirmArrival = async (id) => {
+  try {
+    await api.post(`/rendezvous/${id}/checkin`)
+    toast.add({ severity: 'success', summary: 'Arrivée confirmée', detail: 'Le médecin a été notifié.', life: 3000 })
+    fetchData()
+  } catch (error) {
+    console.error('[API Error] checkin failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de confirmer l\'arrivée.',
+      life: 5000
+    })
+  }
+}
+
+const isImminent = (app) => {
+  if (app.statut !== 'Planifié' && app.statut !== 'Planifie') return false;
+  if (!app.dateHeure) return false;
+  
+  const normalized = app.dateHeure.replace(' ', 'T');
+  // Ensure we append Z or treat as local if needed, but assuming server sends local or UTC properly
+  // Since dateHeure format is usually "YYYY-MM-DDTHH:mm:ss", we parse it directly
+  const appDate = new Date(normalized + (normalized.endsWith('Z') ? '' : 'Z'));
+  const now = new Date(currentTime.value.toISOString());
+  
+  const diffMs = appDate - now;
+  const diffMinutes = Math.floor(diffMs / 60000);
+  
+  // Imminent if it's within the next 15 minutes or it's already past (but still 'Planifié')
+  return diffMinutes <= 15 && diffMinutes >= -60;
+}
+
 // Watchers to trigger re-fetch on filter changes
 watch([selectedDate, selectedDentist], () => {
   fetchData()
 })
 
 onMounted(async () => {
+  timeInterval = setInterval(() => {
+    currentTime.value = new Date()
+  }, 10000)
+
   await fetchDentists()
   fetchData()
   if (route.query.new === 'true') {
     openSlotDialog('08:00')
   }
+})
+
+onUnmounted(() => {
+  if (timeInterval) clearInterval(timeInterval)
 })
 </script>
 
@@ -221,9 +265,9 @@ onMounted(async () => {
       
       <button 
         @click="openSlotDialog('08:00')"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all shadow-md shadow-slate-900/10 cursor-pointer animate-fade-in"
+        class="bg-brand-mint hover:bg-brand-mintDark text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all flex items-center gap-2 shadow-sm animate-fade-in"
       >
-        <i class="pi pi-calendar-plus text-xs"></i>
+        <i class="pi pi-calendar-plus"></i>
         <span>Nouveau Rendez-vous</span>
       </button>
     </div>
@@ -272,7 +316,8 @@ onMounted(async () => {
               <div 
                 v-for="app in appointments"
                 :key="app.id"
-                class="p-4 bg-slate-50/55 hover:bg-slate-50 border border-slate-150/80 hover:border-slate-200 rounded-xl flex items-center justify-between transition-all duration-200 gap-4"
+                class="p-4 bg-slate-50/55 hover:bg-slate-50 border border-slate-150/80 hover:border-slate-200 rounded-xl flex flex-col md:flex-row md:items-center justify-between transition-all duration-200 gap-4"
+                :class="{ 'border-emerald-400 ring-1 ring-emerald-400/50 bg-emerald-50/30': isImminent(app) }"
               >
                 <div class="flex items-center gap-4 min-w-0">
                   <!-- Time Badge -->
@@ -294,6 +339,14 @@ onMounted(async () => {
 
                 <!-- Status and Cancel Action -->
                 <div class="flex items-center gap-3 flex-shrink-0">
+                  <button
+                    v-if="isImminent(app)"
+                    @click="confirmArrival(app.id)"
+                    class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm animate-pulse flex items-center gap-2"
+                  >
+                    <i class="pi pi-check-circle"></i> Confirmer Arrivée
+                  </button>
+
                   <span 
                     class="px-2.5 py-0.5 text-[9px] font-extrabold rounded-full uppercase tracking-wider border"
                     :class="[

@@ -63,6 +63,12 @@ class _DfDrawerState extends State<DfDrawer> {
           {'title': 'nav_book'.tr, 'icon': Icons.add_circle_outline_rounded, 'route': '/home', 'index': 2},
         ]);
         break;
+      case UserRole.admin:
+        items.addAll([
+          {'title': 'Performances Plateforme', 'icon': Icons.analytics_outlined, 'route': '/home', 'index': 0},
+          {'title': 'Gestion des Cabinets', 'icon': Icons.business_outlined, 'route': '/admin/cabinets'},
+        ]);
+        break;
       default:
         break;
     }
@@ -122,8 +128,8 @@ class _DfDrawerState extends State<DfDrawer> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    primary.withValues(alpha: 0.85),
-                    primary.withValues(alpha: 0.65),
+                    primary.withOpacity(0.85),
+                    primary.withOpacity(0.65),
                   ],
                 ),
               ),
@@ -136,8 +142,8 @@ class _DfDrawerState extends State<DfDrawer> {
                     height: 56,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.25),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.40)),
+                      color: Colors.white.withOpacity(0.25),
+                      border: Border.all(color: Colors.white.withOpacity(0.40)),
                     ),
                     child: Center(
                       child: Text(
@@ -154,7 +160,7 @@ class _DfDrawerState extends State<DfDrawer> {
                   Text(
                     'drawer_welcome'.tr,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.80),
+                      color: Colors.white.withOpacity(0.80),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -173,7 +179,7 @@ class _DfDrawerState extends State<DfDrawer> {
                   DfPill(
                     label: _claims.role.displayName,
                     color: Colors.white,
-                    backgroundColor: Colors.white.withValues(alpha: 0.20),
+                    backgroundColor: Colors.white.withOpacity(0.20),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   ),
                 ],

@@ -801,6 +801,10 @@ namespace Dentiste.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ActualArrivalAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("RDV_ACTUAL_ARRIVAL_AT");
+
                     b.Property<int>("CabinetId")
                         .HasColumnType("int")
                         .HasColumnName("RDV_CABINET_ID");
@@ -969,6 +973,14 @@ namespace Dentiste.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("USR_PRENOM");
+
+                    b.Property<Guid?>("ResetToken")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("USR_RESET_TOKEN");
+
+                    b.Property<DateTime?>("ResetTokenExpiresAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("USR_RESET_TOKEN_EXPIRES");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int")

@@ -221,27 +221,27 @@ const markAllNotificationsRead = () => {
     <!-- Notifications Sidebar Drawer -->
     <NotificationsSidebar v-model:visible="notificationsSidebarVisible" />
 
-    <!-- Left Sidebar (Slate Navy) -->
+    <!-- Left Sidebar (White Sidebar) -->
     <aside 
-      class="fixed inset-y-0 left-0 bg-slate-900 text-white z-30 transition-all duration-300 flex flex-col justify-between border-r border-slate-800 shadow-xl"
-      :class="[sidebarOpen ? 'w-64' : 'w-20']"
+      class="fixed inset-y-0 left-0 bg-white text-slate-800 z-30 transition-all duration-300 flex flex-col justify-between border-r border-slate-200 shadow-sm"
+      :class="[sidebarOpen ? 'w-64' : 'w-20', { '-translate-x-full md:translate-x-0': !sidebarOpen }]"
     >
       <!-- Brand/Logo Section -->
       <div>
-        <div class="h-16 flex items-center px-5 border-b border-slate-800 gap-3 overflow-hidden">
+        <div class="h-16 flex items-center px-5 border-b border-slate-200 gap-3 overflow-hidden">
           <img 
             src="@/assets/logo-removebg-preview.png" 
             alt="DentiFlow Logo" 
-            class="w-10 h-10 object-contain rounded-xl bg-slate-800/30 p-1 flex-shrink-0 shadow-lg"
+            class="w-10 h-10 object-contain rounded-xl bg-slate-50 p-1 flex-shrink-0"
           />
           <div v-show="sidebarOpen" class="flex flex-col transition-all duration-300">
-            <span class="text-base font-bold tracking-tight text-white leading-tight">DentiFlow</span>
-            <span class="text-[9px] text-sky-400 font-bold uppercase tracking-widest mt-0.5">Cabinet Intuitif</span>
+            <span class="text-base font-bold tracking-tight text-slate-800 leading-tight">DentiFlow</span>
+            <span class="text-[9px] text-brand-mint font-bold uppercase tracking-widest mt-0.5">Cabinet Intuitif</span>
           </div>
         </div>
 
         <!-- Dynamic SaaS Workspace Header -->
-        <div v-show="sidebarOpen" class="px-5 py-2.5 bg-slate-950/45 border-b border-slate-800/60 text-[9px] font-extrabold tracking-wider text-sky-400 uppercase leading-normal truncate">
+        <div v-show="sidebarOpen" class="px-5 py-2.5 bg-brand-mintLight border-b border-slate-100 text-[9px] font-extrabold tracking-wider text-brand-mintDark uppercase leading-normal truncate">
           {{ sidebarHeader }}
         </div>
 
@@ -251,16 +251,16 @@ const markAllNotificationsRead = () => {
             v-for="item in menuItems"
             :key="item.routeName"
             :to="{ name: item.routeName }"
-            class="flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 group relative cursor-pointer"
+            class="flex items-center gap-3.5 px-4 py-2.5 rounded-lg transition-all duration-200 group relative cursor-pointer"
             :class="[
               isRouteActive(item.routeName) 
-                ? 'bg-sky-500/10 text-sky-400 border-l-2 border-sky-400 font-semibold' 
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-brand-mint text-white font-medium shadow-sm' 
+                : 'text-slate-600 hover:bg-slate-50 hover:text-brand-mint'
             ]"
           >
             <!-- Icon -->
             <i 
-              :class="[item.icon, isRouteActive(item.routeName) ? 'text-sky-400' : 'text-slate-400 group-hover:text-slate-100']"
+              :class="[item.icon, isRouteActive(item.routeName) ? 'text-white' : 'text-slate-400 group-hover:text-brand-mint']"
               class="text-lg transition-colors"
             ></i>
             
@@ -284,11 +284,11 @@ const markAllNotificationsRead = () => {
       </div>
 
       <!-- Sidebar Footer (User identity or Collapse toggle) -->
-      <div class="border-t border-slate-800 p-3 bg-slate-950/40">
+      <div class="border-t border-slate-200 p-3 bg-white">
         <!-- Collapse Trigger Button -->
         <button 
           @click="toggleSidebar"
-          class="hidden md:flex items-center justify-center w-full py-2 hover:bg-slate-800/80 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer mb-2"
+          class="hidden md:flex items-center justify-center w-full py-2 hover:bg-slate-50 rounded-lg text-slate-500 hover:text-brand-mint transition-colors cursor-pointer mb-2"
         >
           <i :class="[sidebarOpen ? 'pi pi-chevron-left' : 'pi pi-chevron-right']" class="text-sm"></i>
           <span v-show="sidebarOpen" class="text-xs font-semibold ml-2">Réduire le menu</span>
@@ -306,7 +306,7 @@ const markAllNotificationsRead = () => {
             :refreshPic="authStore.userImageVersion"
           />
           <div v-show="sidebarOpen" class="overflow-hidden flex-1 min-w-0">
-            <p class="text-xs font-bold text-slate-200 truncate leading-normal">{{ userFullName }}</p>
+            <p class="text-xs font-bold text-slate-800 truncate leading-normal">{{ userFullName }}</p>
             <p class="text-[10px] text-slate-500 font-bold truncate tracking-wider uppercase mt-0.5">{{ authStore.roleName }}</p>
           </div>
         </div>
@@ -315,8 +315,8 @@ const markAllNotificationsRead = () => {
 
     <!-- RIGHT CONTAINER (Adjusts margin based on sidebar state) -->
     <div 
-      class="flex-1 flex flex-col min-h-screen transition-all duration-300"
-      :class="[sidebarOpen ? 'md:ml-64 ml-0' : 'md:ml-20 ml-0']"
+      class="flex-1 flex flex-col min-h-screen transition-all duration-300 w-full"
+      :class="[sidebarOpen ? 'md:ml-64' : 'md:ml-20']"
     >
       
       <!-- Top Header Bar -->
@@ -344,8 +344,8 @@ const markAllNotificationsRead = () => {
         <div class="flex items-center gap-4 relative">
           
           <!-- Cabinet Name dynamic display -->
-          <div v-if="authStore.user?.cabinetName" class="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 border border-slate-200/60 rounded-xl text-xs font-extrabold text-slate-700 shadow-sm">
-            <i class="pi pi-building text-sky-500"></i>
+          <div v-if="authStore.user?.cabinetName" class="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-brand-mintLight border border-brand-mint/20 rounded-xl text-xs font-extrabold text-brand-mintDark shadow-sm">
+            <i class="pi pi-building text-brand-mint"></i>
             <span>{{ authStore.user.cabinetName }} &bull; {{ userRole }}</span>
           </div>
           
@@ -421,8 +421,8 @@ const markAllNotificationsRead = () => {
         </div>
       </header>
 
-      <!-- Main Portal Body (sterile background #F8FAFC) -->
-      <main class="flex-grow p-6 md:p-8 bg-slate-50 max-w-7xl w-full mx-auto">
+      <!-- Main Portal Body (sterile background #F4F9F6) -->
+      <main class="flex-grow p-4 md:p-8 bg-brand-bg w-full">
         <!-- Render page modules here -->
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">

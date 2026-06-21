@@ -27,6 +27,17 @@ class PatientPortalService {
     return null;
   }
 
+  static Future<FullMedicalRecord?> getFullMedicalRecord() async {
+    try {
+      final dynamic data =
+          await ApiService.get('/my/appointments/medical-record');
+      if (data is Map<String, dynamic>) {
+        return FullMedicalRecord.fromJson(data);
+      }
+    } catch (_) {}
+    return null;
+  }
+
   static Future<Availability?> getAvailability(
       DateTime date, int dentisteId) async {
     final String dateStr = _fmt(date);
@@ -59,3 +70,4 @@ class PatientPortalService {
     return [];
   }
 }
+

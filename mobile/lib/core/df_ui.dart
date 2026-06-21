@@ -31,7 +31,7 @@ class AppRadius {
 }
 
 // ============================================================================
-// TEXT STYLES — monospace for numeric data
+// TEXT STYLES â€” monospace for numeric data
 // ============================================================================
 
 class DfTextStyles {
@@ -58,14 +58,14 @@ class DfTextStyles {
 }
 
 // ============================================================================
-// COLOR PALETTE — DentiFlow (teal/blue, professional healthcare)
+// COLOR PALETTE â€” DentiFlow (teal/blue, professional healthcare)
 // ============================================================================
 
 class DfColors {
-  // ===== BRAND — Dental teal/blue =====
-  static const Color primary = Color(0xFF0284C7);      // sky-600 — dark mode
-  static const Color primaryLight = Color(0xFF38BDF8);  // sky-400 — light primary
-  static const Color primaryDim = Color(0xFF0369A1);    // sky-700 — pressed
+  // ===== BRAND â€” Dental teal/blue =====
+  static const Color primary = Color(0xFF12B09E);      // brand-mint
+  static const Color primaryLight = Color(0xFF12B09E);
+  static const Color primaryDim = Color(0xFF0D8577);   // brand-mintDark
 
   static const Color primaryFaintDark = Color(0x1F0284C7);
   static const Color primaryFaintLight = Color(0x1A0284C7);
@@ -95,11 +95,11 @@ class DfColors {
   static const Color bgInputDark = Color(0xFF162030);
 
   // ===== LIGHT MODE BACKGROUNDS =====
-  static const Color bgPageLight = Color(0xFFEFF6FF);
-  static const Color bgAppLight = Color(0xFFF0F9FF);
+  static const Color bgPageLight = Color(0xFFF4F9F6);
+  static const Color bgAppLight = Color(0xFFF4F9F6);
   static const Color bgCardLight = Color(0xFFFFFFFF);
-  static const Color bgElevLight = Color(0xFFE0F2FE);
-  static const Color bgInputLight = Color(0xFFEFF6FF);
+  static const Color bgElevLight = Color(0xFFE7F7F5);
+  static const Color bgInputLight = Color(0xFFF4F9F6);
 
   // ===== DARK MODE BORDERS =====
   static const Color borderDark = Color(0x0FFFFFFF);
@@ -212,7 +212,12 @@ class DfColors {
       onErrorContainer: primaryText,
       surface: appBackground,
       onSurface: primaryText,
-      surfaceContainerHighest: elevatedBackground,
+      // ignore: deprecated_member_use
+      background: appBackground,
+      // ignore: deprecated_member_use
+      onBackground: primaryText,
+      // ignore: deprecated_member_use
+      surfaceVariant: elevatedBackground,
       onSurfaceVariant: secondaryText,
       outline: borderValue,
       outlineVariant: borderStrongValue,
@@ -250,7 +255,7 @@ class DfColors {
         ),
         iconTheme: IconThemeData(color: primaryText),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: cardBackground,
         elevation: 0,
         margin: EdgeInsets.zero,
@@ -259,7 +264,7 @@ class DfColors {
           side: BorderSide(color: borderValue),
         ),
       ),
-      dialogTheme: DialogThemeData(
+      dialogTheme: DialogTheme(
         backgroundColor: cardBackground,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
@@ -642,7 +647,7 @@ class DfPill extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? theme.primaryColor.withValues(alpha: 0.1),
+        color: backgroundColor ?? theme.primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(

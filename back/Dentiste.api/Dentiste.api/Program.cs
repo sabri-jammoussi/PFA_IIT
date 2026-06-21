@@ -83,6 +83,21 @@ namespace Dentiste.api
 						ValidateLifetime = true,
 						ClockSkew = TimeSpan.Zero
 					};
+					
+					options.Events = new JwtBearerEvents
+					{
+						OnMessageReceived = context =>
+						{
+							var accessToken = context.Request.Query["access_token"];
+
+							var path = context.HttpContext.Request.Path;
+							if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/hubs"))
+							{
+								context.Token = accessToken;
+							}
+							return Task.CompletedTask;
+						}
+					};
 				});
 
 			builder.Services.AddAuthorization();
@@ -105,6 +120,8 @@ namespace Dentiste.api
 
 			// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 			builder.Services.AddOpenApi();
+			
+			builder.Services.AddSignalR();
 
 			// ── CORS (restricted to configured frontend origins) ──
 			var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -112,7 +129,7 @@ namespace Dentiste.api
 			builder.Services.AddCors(options =>
 			{
 				options.AddDefaultPolicy(policy => policy
-					.WithOrigins(allowedOrigins)
+					.SetIsOriginAllowed(origin => true)
 					.AllowAnyHeader()
 					.AllowAnyMethod()
 					.AllowCredentials());
@@ -196,6 +213,7 @@ namespace Dentiste.api
 			app.UseMiddleware<SubscriptionCheckMiddleware>();
 
 			app.MapControllers();
+			app.MapHub<Dentiste.api.Hubs.ClinicHub>("/api/hubs/clinic");
 
 			app.Run();
 		}

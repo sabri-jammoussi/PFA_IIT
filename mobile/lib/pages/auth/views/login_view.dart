@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
 import 'package:dentiflow/core/widgets/df_button.dart';
@@ -62,7 +62,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Connectez-vous à votre espace',
+                    'Connectez-vous Ã  votre espace',
                     style: TextStyle(
                       color: DfColors.mutedTextColor(context),
                       fontSize: 15,
@@ -82,7 +82,7 @@ class _LoginViewState extends State<LoginView> {
                   const SizedBox(height: AppSpacing.base),
                   DfTextField(
                     label: 'Mot de passe',
-                    hint: '••••••••',
+                    hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                     controller: _passwordCtrl,
                     obscureText: _obscure,
                     prefixIcon:
@@ -111,7 +111,7 @@ class _LoginViewState extends State<LoginView> {
                         color: DfColors.dangerFaint(context),
                         borderRadius: BorderRadius.circular(AppRadius.md),
                         border: Border.all(
-                            color: DfColors.red.withValues(alpha: 0.3)),
+                            color: DfColors.red.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
