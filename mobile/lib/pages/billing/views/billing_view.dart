@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
 import 'package:dentiflow/core/widgets/df_bottom_sheet.dart';
@@ -140,7 +140,7 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.base, vertical: AppSpacing.xs),
         decoration: BoxDecoration(
-          color: selected ? activeColor.withValues(alpha: 0.15) : Colors.transparent,
+          color: selected ? activeColor.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
             color: selected ? activeColor : DfColors.borderColor(context),

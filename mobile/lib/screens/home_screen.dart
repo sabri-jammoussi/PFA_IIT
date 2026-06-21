@@ -6,6 +6,10 @@ import 'package:dentiflow/core/services/user_claims_service.dart';
 import 'package:dentiflow/screens/widgets/glass_tab_bar.dart';
 import 'package:dentiflow/sidebar/drawer_widget.dart';
 
+// Admin tab pages
+import 'package:dentiflow/pages/admin/views/admin_dashboard_view.dart';
+import 'package:dentiflow/pages/admin/views/cabinets_management_view.dart';
+
 // Dentist tab pages
 import 'package:dentiflow/pages/dashboard/dentist/views/dentist_dashboard_view.dart';
 import 'package:dentiflow/pages/patients/views/patients_list_view.dart';
@@ -101,8 +105,14 @@ class _HomeScreenState extends State<HomeScreen> {
           const PatientBookView(),
           const ProfileView(),
         ];
+      case UserRole.admin:
+        return [
+          const AdminDashboardView(),
+          const CabinetsManagementView(),
+          const ProfileView(),
+        ];
       default:
-        return [const _AdminWebOnlyPage()];
+        return [const ProfileView()];
     }
   }
 
@@ -137,6 +147,12 @@ class _HomeScreenState extends State<HomeScreen> {
           GlassTabItem(icon: Icons.add_circle_outline_rounded, selectedIcon: Icons.add_circle_rounded, label: 'nav_book'.tr, onTap: () => go(2)),
           GlassTabItem(icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: 'nav_profile'.tr, onTap: () => go(3)),
         ];
+      case UserRole.admin:
+        return [
+          GlassTabItem(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard_rounded, label: 'Plateforme', onTap: () => go(0)),
+          GlassTabItem(icon: Icons.business_outlined, selectedIcon: Icons.business_rounded, label: 'Cabinets', onTap: () => go(1)),
+          GlassTabItem(icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: 'Profil', onTap: () => go(2)),
+        ];
       default:
         return [];
     }
@@ -166,17 +182,4 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _AdminWebOnlyPage extends StatelessWidget {
-  const _AdminWebOnlyPage();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: DfEmptyState(
-        icon: Icons.computer_rounded,
-        title: 'admin_web_only_title'.tr,
-        subtitle: 'admin_web_only_msg'.tr,
-      ),
-    );
-  }
-}

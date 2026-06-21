@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../df_ui.dart';
 
 /// Base bottom sheet wrapper used by all form sheets in the app.
@@ -81,7 +81,7 @@ class DfBottomSheet extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: effectiveIconColor.withValues(alpha: 0.12),
+                          color: effectiveIconColor.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(icon, color: effectiveIconColor),

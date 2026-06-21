@@ -20,7 +20,10 @@ public class RendezVousDao
 
     [Required, MaxLength(30)]
     [Column("RDV_STATUT")]
-    public string Statut { get; set; } = "Planifie"; // "Planifie", "Confirme", "Annule", "Complete"
+    public string Statut { get; set; } = "Planifie"; // "Planifie", "Confirme", "Annule", "Complete", "EnConsultation"
+
+    [Column("RDV_ACTUAL_ARRIVAL_AT")]
+    public DateTime? ActualArrivalAt { get; set; }
 
     [Column("RDV_MOTIF")]
     public string? Motif { get; set; }

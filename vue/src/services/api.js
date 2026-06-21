@@ -38,8 +38,9 @@ api.interceptors.response.use(
       // Clear all auth state (token + any legacy keys)
       clearStoredAuth()
 
-      // Redirect to login if not already there
-      if (router.currentRoute.value.path !== '/login') {
+      // Redirect to login if not already there and not on another public route
+      const currentPath = router.currentRoute.value.path
+      if (currentPath !== '/login' && currentPath !== '/forget-password') {
         router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })
       }
     }

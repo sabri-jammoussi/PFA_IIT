@@ -171,7 +171,7 @@ onMounted(() => {
 <template>
   <div class="space-y-8 animate-slide-in">
     <!-- Header Block -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-sky-850 to-indigo-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-brand-mintDark to-brand-mint text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
       <!-- Background pattern -->
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.15),transparent_40%)]"></div>
       
@@ -181,13 +181,13 @@ onMounted(() => {
         </div>
         <div>
           <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Bonjour, {{ authStore.fullName }}</h1>
-          <p class="text-sky-300 text-sm mt-1">Bienvenue dans votre Espace de Santé Patient DentiFlow.</p>
+          <p class="text-brand-mintLight text-sm mt-1">Bienvenue dans votre Espace de Santé Patient DentiFlow.</p>
         </div>
       </div>
 
       <button
         @click="showBookModal = true"
-        class="z-10 px-6 py-3.5 bg-sky-400 hover:bg-sky-300 text-slate-900 font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-sky-400/20 transition-all flex items-center gap-2.5 cursor-pointer self-start md:self-auto"
+        class="z-10 px-6 py-3.5 bg-white hover:bg-slate-50 text-brand-mintDark font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-white/20 transition-all flex items-center gap-2.5 cursor-pointer self-start md:self-auto"
       >
         <i class="pi pi-calendar-plus text-base"></i>
         <span>Demander un Rendez-vous</span>
@@ -258,7 +258,7 @@ onMounted(() => {
         <button
           @click="activeTab = 'appointments'"
           class="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
-          :class="[activeTab === 'appointments' ? 'bg-white text-sky-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
+          :class="[activeTab === 'appointments' ? 'bg-white text-brand-mint shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
         >
           <i class="pi pi-calendar-times"></i>
           <span>Mes Rendez-vous</span>
@@ -267,7 +267,7 @@ onMounted(() => {
         <button
           @click="activeTab = 'medical'"
           class="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
-          :class="[activeTab === 'medical' ? 'bg-white text-sky-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
+          :class="[activeTab === 'medical' ? 'bg-white text-brand-mint shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
         >
           <i class="pi pi-shield"></i>
           <span>Soins & Consultations</span>
@@ -276,7 +276,7 @@ onMounted(() => {
         <button
           @click="activeTab = 'prescriptions'"
           class="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
-          :class="[activeTab === 'prescriptions' ? 'bg-white text-sky-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
+          :class="[activeTab === 'prescriptions' ? 'bg-white text-brand-mint shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
         >
           <i class="pi pi-paperclip"></i>
           <span>Ordonnances</span>
@@ -285,7 +285,7 @@ onMounted(() => {
         <button
           @click="activeTab = 'billing'"
           class="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
-          :class="[activeTab === 'billing' ? 'bg-white text-sky-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
+          :class="[activeTab === 'billing' ? 'bg-white text-brand-mint shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/20']"
         >
           <i class="pi pi-dollar"></i>
           <span>Facturation</span>

@@ -11,6 +11,7 @@ using Dentiste.Notification.Core;
 using Dentiste.Notification.Hubs;
 using Dentiste.Notification.Features.Notifications.Mappers;
 using Dentiste.Notification.Core.Mailing;
+using Dentiste.Notification.Features.Auth.Mappers;
 using Dentiste.Notification.Features.RendezVous;
 using Dentiste.Notification.Features.Paiements;
 using Dentiste.Notification.Features.Patients;
@@ -34,7 +35,7 @@ namespace Dentiste.Notification
             {
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins(allowedOrigins)
+                    policy.SetIsOriginAllowed(origin => true)
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials(); // Required for SignalR
@@ -73,6 +74,7 @@ namespace Dentiste.Notification
             builder.Services.AddKeyedTransient<IEventCommandMapper, RequestAppointmentMapper>("request-appointment");
             builder.Services.AddKeyedTransient<IEventCommandMapper, UpdateRendezVousMapper>("update-rendezvous");
             builder.Services.AddKeyedTransient<IEventCommandMapper, UpdateUserMapper>("update-user");
+            builder.Services.AddKeyedTransient<IEventCommandMapper, ForgetPasswordMapper>("forget-password");
 
             // ── SignalR ──
             builder.Services.AddSignalR(options =>

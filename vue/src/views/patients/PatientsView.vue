@@ -173,10 +173,9 @@ onMounted(() => {
       
       <button 
         @click="showAddDialog = true"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all shadow-md shadow-slate-900/10 cursor-pointer"
+        class="bg-brand-mint hover:bg-brand-mintDark text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all flex items-center gap-2 shadow-sm"
       >
-        <i class="pi pi-user-plus text-xs"></i>
-        <span>Nouveau Patient</span>
+        <i class="pi pi-plus"></i> Nouveau Patient
       </button>
     </div>
 

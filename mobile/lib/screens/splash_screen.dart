@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
 import 'package:dentiflow/core/storage/secure_token_storage.dart';
@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.12),
+                color: primary.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.medical_services_rounded, color: primary, size: 40),
