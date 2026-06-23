@@ -8,6 +8,7 @@ class PatientsViewModel extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
   final RxString searchQuery = ''.obs;
+  final RxInt totalCount = 0.obs;
 
   int _currentPage = 1;
   bool _hasMore = true;
@@ -41,6 +42,7 @@ class PatientsViewModel extends GetxController {
       }
       _hasMore = result.length == _pageSize;
       _currentPage++;
+      totalCount.value = patients.length;
     } catch (_) {
     } finally {
       isLoading.value = false;
@@ -55,11 +57,25 @@ class PatientsViewModel extends GetxController {
 
   Future<void> loadMore() => loadPatients(refresh: false);
 
-  Future<void> addPatient(Patient p) async {
+  /// Adds a patient. When [invite] is true the backend also creates a portal
+  /// account and emails an invitation (mirrors the Vue PatientAddDialog).
+  Future<void> addPatient(Patient p, {bool invite = false}) async {
     try {
-      final Patient created = await PatientService.addPatient(p);
-      patients.insert(0, created);
-      showThemedSnackbar('Succès', 'Patient ajouté.', type: SnackbarType.success);
+      if (invite) {
+        await PatientService.invitePatient(p);
+        showThemedSnackbar(
+          'Patient créé & invité',
+          'Le patient a été créé et l\'invitation e-mail a été envoyée.',
+          type: SnackbarType.success,
+        );
+        await loadPatients();
+      } else {
+        final Patient created = await PatientService.addPatient(p);
+        patients.insert(0, created);
+        totalCount.value = patients.length;
+        showThemedSnackbar('Patient créé', 'La nouvelle fiche patient a été ajoutée.',
+            type: SnackbarType.success);
+      }
     } catch (_) {}
   }
 
@@ -68,7 +84,8 @@ class PatientsViewModel extends GetxController {
       final Patient updated = await PatientService.updatePatient(p);
       final int idx = patients.indexWhere((x) => x.id == p.id);
       if (idx != -1) patients[idx] = updated;
-      showThemedSnackbar('Succès', 'Patient mis à jour.', type: SnackbarType.success);
+      showThemedSnackbar('Patient mis à jour', 'Les modifications ont été enregistrées.',
+          type: SnackbarType.success);
     } catch (_) {}
   }
 
@@ -76,7 +93,9 @@ class PatientsViewModel extends GetxController {
     try {
       await PatientService.archivePatient(id);
       patients.removeWhere((p) => p.id == id);
-      showThemedSnackbar('Archivé', 'Patient archivé.', type: SnackbarType.success);
+      totalCount.value = patients.length;
+      showThemedSnackbar('Archivé', 'Le dossier patient a été archivé.',
+          type: SnackbarType.success);
     } catch (_) {}
   }
 }

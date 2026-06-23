@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
 import 'package:dentiflow/core/widgets/df_bottom_sheet.dart';
@@ -170,9 +170,41 @@ class _InvoiceCard extends StatelessWidget {
   final Color primary;
   final VoidCallback? onTap;
 
+  String _formatDate(String dateStr) {
+    try {
+      final d = DateTime.parse(dateStr);
+      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bool isPaid = invoice.balance <= 0;
+    final String statusLabel = invoice.statutPaiement.isNotEmpty
+        ? (invoice.statutPaiement == 'NonPaye' ? 'Impayé' : invoice.statutPaiement)
+        : (invoice.balance <= 0
+            ? 'Payé'
+            : invoice.montantPaye > 0
+                ? 'Partiel'
+                : 'Impayé');
+
+    final bool isPaid = statusLabel == 'Payé';
+    final bool isPartial = statusLabel == 'Partiel';
+
+    final Color badgeColor = isPaid
+        ? DfColors.green
+        : isPartial
+            ? DfColors.orange
+            : DfColors.red;
+
+    final Color badgeFaint = isPaid
+        ? DfColors.successFaint(context)
+        : isPartial
+            ? DfColors.warningFaint(context)
+            : DfColors.dangerFaint(context);
+
+    final IconData icon = isPaid ? Icons.check_circle_rounded : Icons.receipt_long_rounded;
 
     return DfCard(
       onTap: onTap,
@@ -182,15 +214,13 @@ class _InvoiceCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: isPaid
-                  ? DfColors.successFaint(context)
-                  : DfColors.dangerFaint(context),
+              color: badgeFaint,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(
-              isPaid ? Icons.check_circle_rounded : Icons.receipt_long_rounded,
+              icon,
               size: 22,
-              color: isPaid ? DfColors.green : DfColors.red,
+              color: badgeColor,
             ),
           ),
           const SizedBox(width: 12),
@@ -198,6 +228,30 @@ class _InvoiceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    if (invoice.numeroFacture.isNotEmpty) ...[
+                      Text(
+                        invoice.numeroFacture,
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          color: DfColors.brandPrimary(context),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Text(
+                      _formatDate(invoice.dateEmission),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: DfColors.dimTextColor(context),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
                 Text(
                   invoice.patientFullName.isNotEmpty
                       ? invoice.patientFullName
@@ -217,18 +271,17 @@ class _InvoiceCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               DfStatusBadge(
-                label: isPaid ? 'Payé' : 'Impayé',
-                color: isPaid ? DfColors.green : DfColors.red,
-                faintColor:
-                    isPaid ? DfColors.greenFaintLight : DfColors.redFaintLight,
+                label: statusLabel,
+                color: badgeColor,
+                faintColor: badgeFaint,
               ),
               if (!isPaid) ...[
                 const SizedBox(height: 4),
                 Text(
                   '${invoice.balance.toStringAsFixed(2)} DT restant',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11,
-                      color: DfColors.red,
+                      color: isPartial ? DfColors.orange : DfColors.red,
                       fontWeight: FontWeight.w600),
                 ),
               ],

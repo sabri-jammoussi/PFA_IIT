@@ -47,6 +47,10 @@ class ApiService {
         response = await http.put(url, headers: headers,
             body: body != null ? json.encode(body) : null);
         break;
+      case 'PATCH':
+        response = await http.patch(url, headers: headers,
+            body: body != null ? json.encode(body) : null);
+        break;
       case 'DELETE':
         response = await http.delete(url, headers: headers);
         break;
@@ -102,6 +106,9 @@ class ApiService {
 
   static Future<dynamic> put(String endpoint, {dynamic body}) =>
       _sendRequest(method: 'PUT', endpoint: endpoint, body: body);
+
+  static Future<dynamic> patch(String endpoint, {dynamic body}) =>
+      _sendRequest(method: 'PATCH', endpoint: endpoint, body: body);
 
   static Future<dynamic> delete(String endpoint) =>
       _sendRequest(method: 'DELETE', endpoint: endpoint);

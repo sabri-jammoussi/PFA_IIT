@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
 import '../models/secretaire_model.dart';
@@ -7,6 +9,9 @@ class SecretairesViewModel extends GetxController {
   final RxList<Secretaire> secretaires = <Secretaire>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isSubmitting = false.obs;
+  final RxString search = ''.obs;
+
+  Timer? _debounce;
 
   @override
   void onInit() {
@@ -14,10 +19,23 @@ class SecretairesViewModel extends GetxController {
     loadSecretaires();
   }
 
+  @override
+  void onClose() {
+    _debounce?.cancel();
+    super.onClose();
+  }
+
+  void onSearchChanged(String value) {
+    search.value = value;
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), loadSecretaires);
+  }
+
   Future<void> loadSecretaires() async {
     isLoading.value = true;
     try {
-      final List<Secretaire> list = await SecretairesService.getSecretaires();
+      final List<Secretaire> list =
+          await SecretairesService.getSecretaires(search: search.value);
       secretaires.assignAll(list);
     } catch (_) {
     } finally {
@@ -25,11 +43,12 @@ class SecretairesViewModel extends GetxController {
     }
   }
 
-  Future<void> createSecretaire({
+  Future<bool> createSecretaire({
     required String nom,
     required String prenom,
     required String email,
     required String password,
+    String? username,
   }) async {
     isSubmitting.value = true;
     try {
@@ -38,34 +57,65 @@ class SecretairesViewModel extends GetxController {
         prenom: prenom,
         email: email,
         password: password,
+        username: username,
       );
-      showThemedSnackbar('Succès', 'Secrétaire ajouté(e) avec succès.',
-          type: SnackbarType.success);
+      showThemedSnackbar(
+        'Secrétaire ajoutée',
+        "Le compte a été créé. Un e-mail d'invitation avec les identifiants a été envoyé à $email.",
+        type: SnackbarType.success,
+      );
       await loadSecretaires();
+      return true;
     } catch (_) {
+      return false;
     } finally {
       isSubmitting.value = false;
     }
   }
 
-  Future<void> toggleActive(Secretaire s) async {
+  Future<bool> updateSecretaire({
+    required Secretaire original,
+    required String nom,
+    required String prenom,
+    required String email,
+    required bool isActive,
+    String? username,
+    String? password,
+  }) async {
+    isSubmitting.value = true;
     try {
-      await SecretairesService.toggleActive(s.id, !s.isActive);
-      await loadSecretaires();
+      await SecretairesService.updateSecretaire(
+        id: original.id,
+        nom: nom,
+        prenom: prenom,
+        email: email,
+        isActive: isActive,
+        username: username,
+        password: password,
+      );
       showThemedSnackbar(
-        'Mise à jour',
-        '${s.displayName} est maintenant ${!s.isActive ? 'activé(e)' : 'désactivé(e)'}.',
+        'Secrétaire modifiée',
+        'Le profil de $prenom $nom a été mis à jour.',
         type: SnackbarType.success,
       );
-    } catch (_) {}
+      await loadSecretaires();
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
   }
 
   Future<void> deleteSecretaire(Secretaire s) async {
     try {
       await SecretairesService.deleteSecretaire(s.id);
       secretaires.remove(s);
-      showThemedSnackbar('Supprimé', '${s.displayName} a été supprimé(e).',
-          type: SnackbarType.success);
+      showThemedSnackbar(
+        'Compte supprimé',
+        'Le compte de ${s.displayName} a été supprimé avec succès.',
+        type: SnackbarType.success,
+      );
     } catch (_) {}
   }
 }

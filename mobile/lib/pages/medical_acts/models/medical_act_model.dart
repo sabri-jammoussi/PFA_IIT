@@ -2,12 +2,14 @@ class MedicalAct {
   final int id;
   String libelle;
   double tarifDeBase;
+  String? codeNomenclature;
   String? description;
 
   MedicalAct({
     required this.id,
     required this.libelle,
     required this.tarifDeBase,
+    this.codeNomenclature,
     this.description,
   });
 
@@ -16,12 +18,14 @@ class MedicalAct {
         libelle: (j['libelle'] ?? j['nom'] ?? '') as String,
         tarifDeBase:
             ((j['tarifDeBase'] ?? j['tarif'] ?? j['prix'] ?? 0) as num).toDouble(),
+        codeNomenclature: j['codeNomenclature'] as String?,
         description: j['description'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
         'libelle': libelle,
         'tarifDeBase': tarifDeBase,
+        'codeNomenclature': codeNomenclature,
         if (description != null) 'description': description,
       };
 }

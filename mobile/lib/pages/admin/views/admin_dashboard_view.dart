@@ -82,10 +82,27 @@ class AdminDashboardView extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Supervision globale de l\'infrastructure Cloud DentiFlow.',
+                      'Supervision globale de l\'infrastructure Cloud, des serveurs de messagerie et de l\'hébergement.',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.55),
                         fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: const Text(
+                        'Console SaaS Active',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -108,7 +125,7 @@ class AdminDashboardView extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: _KpiCard(
-                      label: 'Taux Actif',
+                      label: 'Taux Actif Serveurs',
                       value: '99.99%',
                       icon: Icons.check_circle_rounded,
                       color: DfColors.green,
@@ -118,7 +135,7 @@ class AdminDashboardView extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: _KpiCard(
-                      label: 'Données',
+                      label: 'Volume de données global',
                       value: '12.4 GB',
                       icon: Icons.storage_rounded,
                       color: DfColors.blue,
@@ -130,7 +147,7 @@ class AdminDashboardView extends StatelessWidget {
               const SizedBox(height: AppSpacing.xl),
 
               // Infrastructure status
-              const DfSectionLabel(title: 'État de l\'infrastructure'),
+              const DfSectionLabel(title: 'État de l\'infrastructure SaaS'),
               const SizedBox(height: AppSpacing.sm),
               DfCard(
                 child: Column(
@@ -160,7 +177,7 @@ class AdminDashboardView extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const DfSectionLabel(title: 'Dernières inscriptions'),
+                  const DfSectionLabel(title: 'Dernières inscriptions cabinets'),
                   TextButton.icon(
                     icon: Icon(Icons.arrow_forward_rounded,
                         size: 16, color: primary),
@@ -217,18 +234,9 @@ class AdminDashboardView extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            DfStatusBadge(
-                              label: (cab['isSubscriptionActive'] ?? true)
-                                  ? 'Actif'
-                                  : 'Suspendu',
-                              color: (cab['isSubscriptionActive'] ?? true)
-                                  ? DfColors.green
-                                  : DfColors.red,
-                              faintColor:
-                                  (cab['isSubscriptionActive'] ?? true)
-                                      ? DfColors.greenFaintLight
-                                      : DfColors.redFaintLight,
-                            ),
+                            (cab['isSubscriptionActive'] ?? true)
+                                ? DfStatusBadge.success(context, 'Actif')
+                                : DfStatusBadge.danger(context, 'Suspendu'),
                           ],
                         ),
                       ),
