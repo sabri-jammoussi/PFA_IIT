@@ -16,17 +16,6 @@ class PatientPortalService {
     return [];
   }
 
-  static Future<MedicalRecordSummary?> getMedicalRecord() async {
-    try {
-      final dynamic data =
-          await ApiService.get('/my/appointments/medical-record');
-      if (data is Map<String, dynamic>) {
-        return MedicalRecordSummary.fromJson(data);
-      }
-    } catch (_) {}
-    return null;
-  }
-
   static Future<FullMedicalRecord?> getFullMedicalRecord() async {
     try {
       final dynamic data =
@@ -38,29 +27,40 @@ class PatientPortalService {
     return null;
   }
 
-  static Future<Availability?> getAvailability(
+  /// Returns the bookable slots for [date] / [dentisteId].
+  /// Backend shape: List of { time, dateTime, isAvailable }.
+  static Future<List<AppointmentSlot>> getAvailability(
       DateTime date, int dentisteId) async {
     final String dateStr = _fmt(date);
     final dynamic data = await ApiService.get(
         '/my/appointments/availability?date=$dateStr&dentistId=$dentisteId');
-    if (data is Map<String, dynamic>) {
-      return Availability.fromJson(data);
-    }
     if (data is List) {
-      return Availability(date: dateStr, slots: data.cast<String>());
+      return data
+          .cast<Map<String, dynamic>>()
+          .map(AppointmentSlot.fromJson)
+          .toList();
     }
-    return null;
+    // Defensive: some envs may wrap the list in a `slots` field.
+    if (data is Map<String, dynamic> && data['slots'] is List) {
+      return (data['slots'] as List)
+          .cast<Map<String, dynamic>>()
+          .map(AppointmentSlot.fromJson)
+          .toList();
+    }
+    return [];
   }
 
   static Future<void> requestAppointment({
     required int dentisteId,
     required String dateHeure,
     required String motif,
+    String note = '',
   }) async {
     await ApiService.post('/my/appointments/request', body: {
       'dentisteId': dentisteId,
       'dateHeure': dateHeure,
       'motif': motif,
+      'note': note,
     });
   }
 
@@ -70,4 +70,3 @@ class PatientPortalService {
     return [];
   }
 }
-

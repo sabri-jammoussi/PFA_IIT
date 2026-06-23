@@ -1,3 +1,67 @@
+import 'package:flutter/material.dart';
+import 'package:dentiflow/core/df_ui.dart';
+
+/// Normalizes an appointment / invoice status for comparison: lowercases and
+/// strips French accents so "Annulé" and "Annule" match the same branch.
+String normalizeStatus(String? raw) {
+  if (raw == null) return '';
+  final String s = raw.trim().toLowerCase();
+  const Map<String, String> accents = {
+    'à': 'a', 'â': 'a', 'ä': 'a',
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'î': 'i', 'ï': 'i',
+    'ô': 'o', 'ö': 'o',
+    'ù': 'u', 'û': 'u', 'ü': 'u',
+    'ç': 'c',
+  };
+  final StringBuffer out = StringBuffer();
+  for (final int code in s.runes) {
+    final String ch = String.fromCharCode(code);
+    out.write(accents[ch] ?? ch);
+  }
+  return out.toString();
+}
+
+/// Visual mapping of an appointment status to (color, faint color).
+/// EnAttenteValidation -> warning, Planifie/Confirme -> info/success,
+/// Annule -> danger, Termine -> success.
+class StatusVisual {
+  final Color color;
+  final Color faint;
+  const StatusVisual(this.color, this.faint);
+
+  static StatusVisual appointment(BuildContext context, String? statut) {
+    final String s = normalizeStatus(statut);
+    if (s.contains('attente') || s.contains('demande')) {
+      return StatusVisual(
+          DfColors.warning(context), DfColors.warningFaint(context));
+    }
+    if (s.contains('annul') || s.contains('refus')) {
+      return StatusVisual(
+          DfColors.danger(context), DfColors.dangerFaint(context));
+    }
+    if (s.contains('termin') || s.contains('confirm')) {
+      return StatusVisual(
+          DfColors.success(context), DfColors.successFaint(context));
+    }
+    // Planifie and anything else -> info
+    return StatusVisual(DfColors.info(context), DfColors.infoFaint(context));
+  }
+
+  static StatusVisual invoice(BuildContext context, String? statut) {
+    final String s = normalizeStatus(statut);
+    if (s.contains('paye') && !s.contains('partiel') && !s.contains('impaye')) {
+      return StatusVisual(
+          DfColors.success(context), DfColors.successFaint(context));
+    }
+    if (s.contains('partiel')) {
+      return StatusVisual(
+          DfColors.warning(context), DfColors.warningFaint(context));
+    }
+    return StatusVisual(DfColors.danger(context), DfColors.dangerFaint(context));
+  }
+}
+
 class MyAppointment {
   final int id;
   final String? dentisteNom;
@@ -15,21 +79,58 @@ class MyAppointment {
 
   factory MyAppointment.fromJson(Map<String, dynamic> j) => MyAppointment(
         id: (j['id'] ?? 0) as int,
-        dentisteNom: j['dentisteNom'] as String? ??
-            j['dentisteNomComplet'] as String?,
+        dentisteNom: j['dentisteNomComplet'] as String? ??
+            j['dentisteNom'] as String?,
         dateHeure: (j['dateHeure'] ?? j['dateDebut'] ?? '') as String,
         statut: (j['statut'] ?? j['status'] ?? '') as String,
         motif: j['motif'] as String?,
       );
 
-  String get formattedDate {
+  DateTime? get dateTime {
     try {
-      final d = DateTime.parse(dateHeure);
-      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} '
-          '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+      return DateTime.parse(dateHeure);
     } catch (_) {
-      return dateHeure;
+      return null;
     }
+  }
+
+  bool get isPast {
+    final DateTime? d = dateTime;
+    if (d == null) return false;
+    return d.isBefore(DateTime.now());
+  }
+
+  /// True for statuses that count as an active, upcoming visit.
+  bool get isUpcomingStatus {
+    final String s = normalizeStatus(statut);
+    return !(s.contains('annul') || s.contains('refus') || s.contains('termin'));
+  }
+
+  String get formattedDate {
+    final DateTime? d = dateTime;
+    if (d == null) return dateHeure;
+    return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} '
+        '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  }
+
+  String get formattedDateLong {
+    final DateTime? d = dateTime;
+    if (d == null) return dateHeure;
+    return '${_weekday(d.weekday)} ${d.day.toString().padLeft(2, '0')} ${_month(d.month)} ${d.year}';
+  }
+
+  String get formattedTime {
+    final DateTime? d = dateTime;
+    if (d == null) return '';
+    return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Compact label used by the "Prochain RDV" KPI: "12 juin 09:00".
+  String get formattedShort {
+    final DateTime? d = dateTime;
+    if (d == null) return dateHeure;
+    return '${d.day.toString().padLeft(2, '0')} ${_month(d.month).substring(0, 3)} '
+        '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
   }
 }
 
@@ -54,15 +155,23 @@ class MedicalRecordSummary {
       );
 }
 
-class Availability {
-  final String date;
-  final List<String> slots;
+/// A single bookable 30-minute slot as returned by /my/appointments/availability:
+/// { "time": "09:00", "dateTime": "2026-06-23T09:00:00", "isAvailable": true }
+class AppointmentSlot {
+  final String time;
+  final String dateTime;
+  final bool isAvailable;
 
-  Availability({required this.date, required this.slots});
+  AppointmentSlot({
+    required this.time,
+    required this.dateTime,
+    required this.isAvailable,
+  });
 
-  factory Availability.fromJson(Map<String, dynamic> j) => Availability(
-        date: (j['date'] ?? '') as String,
-        slots: (j['slots'] as List?)?.cast<String>() ?? [],
+  factory AppointmentSlot.fromJson(Map<String, dynamic> j) => AppointmentSlot(
+        time: (j['time'] ?? '') as String,
+        dateTime: (j['dateTime'] ?? '') as String,
+        isAvailable: (j['isAvailable'] ?? false) as bool,
       );
 }
 
@@ -99,7 +208,7 @@ class PatientConsultation {
   String get formattedDate {
     try {
       final d = DateTime.parse(dateConsultation);
-      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+      return '${_weekday(d.weekday)} ${d.day.toString().padLeft(2, '0')} ${_month(d.month)} ${d.year}';
     } catch (_) {
       return dateConsultation;
     }
@@ -209,3 +318,19 @@ class FullMedicalRecord {
       );
 }
 
+// ─── French date helpers (no intl dependency assumed) ───────────────────────
+
+String _weekday(int w) {
+  const days = [
+    'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'
+  ];
+  return (w >= 1 && w <= 7) ? days[w - 1] : '';
+}
+
+String _month(int m) {
+  const months = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+  return (m >= 1 && m <= 12) ? months[m - 1] : '';
+}

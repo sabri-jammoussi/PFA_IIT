@@ -20,33 +20,37 @@ class _MedicalActSheetState extends State<MedicalActSheet> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final TextEditingController _libelleCtrl;
   late final TextEditingController _tarifCtrl;
-  late final TextEditingController _descCtrl;
+  late final TextEditingController _codeCtrl;
 
   @override
   void initState() {
     super.initState();
     _libelleCtrl = TextEditingController(text: widget.act?.libelle ?? '');
     _tarifCtrl = TextEditingController(
-        text: widget.act?.tarifDeBase.toStringAsFixed(2) ?? '');
-    _descCtrl = TextEditingController(text: widget.act?.description ?? '');
+        text: widget.act != null
+            ? widget.act!.tarifDeBase.toStringAsFixed(2)
+            : '');
+    _codeCtrl =
+        TextEditingController(text: widget.act?.codeNomenclature ?? '');
   }
 
   @override
   void dispose() {
     _libelleCtrl.dispose();
     _tarifCtrl.dispose();
-    _descCtrl.dispose();
+    _codeCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
+    final String code = _codeCtrl.text.trim();
     widget.onSave(MedicalAct(
       id: widget.act?.id ?? 0,
       libelle: _libelleCtrl.text.trim(),
       tarifDeBase: double.tryParse(_tarifCtrl.text) ?? 0.0,
-      description:
-          _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      codeNomenclature: code.isEmpty ? null : code,
+      description: widget.act?.description,
     ));
     Navigator.pop(context);
   }
@@ -63,7 +67,7 @@ class _MedicalActSheetState extends State<MedicalActSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DfTextField(
-              label: 'Libellé',
+              label: "Libellé de l'acte",
               hint: 'Ex: Détartrage, Extraction...',
               controller: _libelleCtrl,
               validator: (v) =>
@@ -71,7 +75,7 @@ class _MedicalActSheetState extends State<MedicalActSheet> {
             ),
             const SizedBox(height: AppSpacing.base),
             DfTextField(
-              label: 'Prix de base (DT)',
+              label: 'Tarif de base (DT)',
               hint: '0.00',
               controller: _tarifCtrl,
               keyboardType:
@@ -87,10 +91,9 @@ class _MedicalActSheetState extends State<MedicalActSheet> {
             ),
             const SizedBox(height: AppSpacing.base),
             DfTextField(
-              label: 'Description',
-              hint: 'Description optionnelle...',
-              controller: _descCtrl,
-              maxLines: 3,
+              label: 'Code nomenclature',
+              hint: 'Ex: SC12 (optionnel)',
+              controller: _codeCtrl,
             ),
             const SizedBox(height: AppSpacing.xl),
             DfPrimaryButton(

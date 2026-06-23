@@ -1,37 +1,45 @@
 class Invoice {
   final int id;
-  final String? patientNom;
-  final String? patientPrenom;
+  final String numeroFacture;
+  final String dateEmission;
   final double montantTotal;
   double montantPaye;
-  String statut;
-  final String dateFacture;
+  String statutPaiement; // 'Payé' | 'Partiel' | 'Impayé'
+  final int patientId;
+  final String? patientNomComplet;
 
   Invoice({
     required this.id,
-    this.patientNom,
-    this.patientPrenom,
+    required this.numeroFacture,
+    required this.dateEmission,
     required this.montantTotal,
     required this.montantPaye,
-    required this.statut,
-    required this.dateFacture,
+    required this.statutPaiement,
+    required this.patientId,
+    this.patientNomComplet,
   });
 
   factory Invoice.fromJson(Map<String, dynamic> j) => Invoice(
         id: (j['id'] ?? 0) as int,
-        patientNom: j['patientNom'] as String?,
-        patientPrenom: j['patientPrenom'] as String?,
-        montantTotal:
-            ((j['montantTotal'] ?? j['total'] ?? 0) as num).toDouble(),
-        montantPaye: ((j['montantPaye'] ?? j['paye'] ?? 0) as num).toDouble(),
-        statut: (j['statut'] ?? j['status'] ?? '') as String,
-        dateFacture: (j['dateFacture'] ?? j['date'] ?? '') as String,
+        numeroFacture: (j['numeroFacture'] ?? '') as String,
+        dateEmission: (j['dateEmission'] ?? '') as String,
+        montantTotal: ((j['montantTotal'] ?? 0) as num).toDouble(),
+        montantPaye: ((j['montantPaye'] ?? 0) as num).toDouble(),
+        statutPaiement: (j['statutPaiement'] ?? '') as String,
+        patientId: (j['patientId'] ?? 0) as int,
+        patientNomComplet: j['patientNomComplet'] as String?,
       );
 
-  String get patientFullName =>
-      [patientPrenom, patientNom].where((s) => s?.isNotEmpty == true).join(' ');
+  String get patientLabel => (patientNomComplet?.isNotEmpty == true)
+      ? patientNomComplet!
+      : 'Patient #$patientId';
+
+  String get patientFullName => patientNomComplet ?? '';
 
   double get balance => montantTotal - montantPaye;
+
+  bool get isPaid => statutPaiement == 'Payé' || balance <= 0;
+  bool get isPartial => statutPaiement == 'Partiel';
 }
 
 class Payment {
@@ -48,9 +56,9 @@ class Payment {
   });
 
   Map<String, dynamic> toJson() => {
-        'factureId': factureId,
-        'montant': montant,
         'datePaiement': datePaiement,
+        'montant': montant,
         'modePaiement': modePaiement,
+        'factureId': factureId,
       };
 }

@@ -10,15 +10,47 @@ import '../core/constants/preferences_keys.dart';
 class AppController extends GetxController {
   Locale _locale = const Locale('fr', 'FR');
   ThemeMode _themeMode = ThemeMode.light;
+  bool _emailNotifications = true;
+  bool _soundAlerts = true;
 
   Locale get locale => _locale;
   ThemeMode get themeMode => _themeMode;
+  bool get emailNotifications => _emailNotifications;
+  bool get soundAlerts => _soundAlerts;
 
   @override
   void onInit() {
     super.onInit();
     _initializeTheme();
     _initializeLocale();
+    _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _emailNotifications = prefs.getBool('emailNotifications') ?? true;
+      _soundAlerts = prefs.getBool('soundAlerts') ?? true;
+      update();
+    } catch (_) {}
+  }
+
+  Future<void> setEmailNotifications(bool value) async {
+    _emailNotifications = value;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('emailNotifications', value);
+    } catch (_) {}
+    update();
+  }
+
+  Future<void> setSoundAlerts(bool value) async {
+    _soundAlerts = value;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('soundAlerts', value);
+    } catch (_) {}
+    update();
   }
 
   Future<void> _initializeTheme() async {

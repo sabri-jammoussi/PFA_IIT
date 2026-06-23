@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
 import 'package:dentiflow/core/widgets/df_bottom_sheet.dart';
 import 'package:dentiflow/core/widgets/df_button.dart';
+import 'package:dentiflow/core/widgets/df_dropdown_field.dart';
 import 'package:dentiflow/core/widgets/df_text_field.dart';
 import 'package:dentiflow/core/widgets/df_time_picker.dart';
 import 'package:dentiflow/pages/patients/models/patient_model.dart';
@@ -10,30 +10,68 @@ import 'package:dentiflow/pages/patients/services/patient_service.dart';
 import '../models/appointment_model.dart';
 import '../viewmodels/appointments_viewmodel.dart';
 
+/// Duration options mirroring AppointmentAddDialog.vue.
+class _DurationOption {
+  const _DurationOption(this.value, this.label);
+  final String value; // "HH:mm:ss"
+  final String label;
+}
+
+const List<_DurationOption> _durations = [
+  _DurationOption('00:15:00', '15 minutes'),
+  _DurationOption('00:30:00', '30 minutes'),
+  _DurationOption('00:45:00', '45 minutes'),
+  _DurationOption('01:00:00', '1 heure'),
+];
+
 class AppointmentAddSheet extends StatefulWidget {
-  const AppointmentAddSheet({required this.vm, super.key});
+  const AppointmentAddSheet({required this.vm, this.initialSlot, super.key});
 
   final AppointmentsViewModel vm;
+
+  /// Optional "HH:mm" pre-selected time when opened from a free slot.
+  final String? initialSlot;
 
   @override
   State<AppointmentAddSheet> createState() => _AppointmentAddSheetState();
 }
 
 class _AppointmentAddSheetState extends State<AppointmentAddSheet> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _motifCtrl = TextEditingController();
+  final TextEditingController _noteCtrl = TextEditingController();
 
   List<Patient> _patients = [];
   Patient? _selectedPatient;
   Dentist? _selectedDentist;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  _DurationOption _duration = _durations[1]; // 30 min default
   bool _saving = false;
   bool _loadingPatients = false;
+
+  bool _patientError = false;
+  bool _dateError = false;
 
   @override
   void initState() {
     super.initState();
+    // Default date = agenda's currently selected day.
+    _selectedDate = widget.vm.selectedDate.value;
+    // Default time from tapped slot.
+    if (widget.initialSlot != null) {
+      final parts = widget.initialSlot!.split(':');
+      if (parts.length >= 2) {
+        _selectedTime = TimeOfDay(
+          hour: int.tryParse(parts[0]) ?? 9,
+          minute: int.tryParse(parts[1]) ?? 0,
+        );
+      }
+    }
+    // Default dentist = agenda's filter selection.
+    _selectedDentist = widget.vm.dentists
+        .where((d) => d.id == widget.vm.selectedDentistId.value)
+        .cast<Dentist?>()
+        .firstWhere((_) => true, orElse: () => null);
     _loadPatients();
   }
 
@@ -41,7 +79,6 @@ class _AppointmentAddSheetState extends State<AppointmentAddSheet> {
     setState(() => _loadingPatients = true);
     try {
       _patients = await PatientService.getPatients(pageSize: 100);
-      if (mounted) setState(() {});
     } catch (_) {
     } finally {
       if (mounted) setState(() => _loadingPatients = false);
@@ -51,16 +88,23 @@ class _AppointmentAddSheetState extends State<AppointmentAddSheet> {
   @override
   void dispose() {
     _motifCtrl.dispose();
+    _noteCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedDate == null) {
-      showThemedSnackbar('Date requise', 'Sélectionnez une date.',
+    setState(() {
+      _patientError = _selectedPatient == null;
+      _dateError = _selectedDate == null;
+    });
+    if (_patientError || _dateError) return;
+    if (_selectedDentist == null) {
+      showThemedSnackbar('Praticien requis',
+          'Sélectionnez un médecin traitant.',
           type: SnackbarType.warning);
       return;
     }
+
     setState(() => _saving = true);
     try {
       final DateTime dateTime = DateTime(
@@ -72,14 +116,16 @@ class _AppointmentAddSheetState extends State<AppointmentAddSheet> {
       );
       final appt = Appointment(
         id: 0,
-        patientId: _selectedPatient?.id,
-        dentisteId: _selectedDentist?.id,
+        patientId: _selectedPatient!.id,
+        dentisteId: _selectedDentist!.id,
         dateHeure: dateTime.toIso8601String(),
+        dureeEstimee: _duration.value,
         motif: _motifCtrl.text.trim().isEmpty ? null : _motifCtrl.text.trim(),
-        statut: 'PLANIFIÉ',
+        note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+        statut: 'Planifie',
       );
-      await widget.vm.addAppointment(appt);
-      if (mounted) Navigator.pop(context);
+      final ok = await widget.vm.addAppointment(appt);
+      if (ok && mounted) Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -87,131 +133,112 @@ class _AppointmentAddSheetState extends State<AppointmentAddSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final String timeLabel = _selectedTime != null
+        ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
+        : '';
+
     return DfBottomSheet(
-      title: 'Nouveau rendez-vous',
+      title: 'Planification RDV',
+      subtitle: 'Renseignez les informations du rendez-vous',
       icon: Icons.calendar_month_rounded,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Patient picker
-            Text('PATIENT',
-                style: TextStyle(
-                    fontFamily: 'SpaceGrotesk',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: DfColors.dimTextColor(context),
-                    letterSpacing: 1.2)),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: DfColors.surface3(context),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: DfColors.borderColor(context)),
-              ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<Patient>(
-                  value: _selectedPatient,
-                  isExpanded: true,
-                  hint: Text(
-                      _loadingPatients
-                          ? 'Chargement...'
-                          : 'Sélectionner un patient',
-                      style: TextStyle(
-                          color: DfColors.subTextColor(context), fontSize: 14)),
-                  dropdownColor: DfColors.surface1(context),
-                  items: _patients
-                      .map((p) => DropdownMenuItem<Patient>(
-                            value: p,
-                            child: Text(p.fullName,
-                                style: const TextStyle(fontSize: 14)),
-                          ))
-                      .toList(),
-                  onChanged: (p) => setState(() => _selectedPatient = p),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Patient
+          DfDropdownField<Patient>(
+            label: 'Patient',
+            required: true,
+            items: _patients,
+            labelOf: (p) => p.fullName,
+            value: _selectedPatient,
+            hint: _loadingPatients
+                ? 'Chargement...'
+                : 'Sélectionner le patient',
+            errorText: _patientError ? 'Patient requis' : null,
+            onChanged: (p) => setState(() {
+              _selectedPatient = p;
+              _patientError = false;
+            }),
+          ),
+          const SizedBox(height: AppSpacing.base),
+          // Dentist
+          DfDropdownField<Dentist>(
+            label: 'Assigner praticien',
+            items: widget.vm.dentists.toList(),
+            labelOf: (d) => d.fullName,
+            value: _selectedDentist,
+            hint: 'Choisir un médecin',
+            onChanged: (d) => setState(() => _selectedDentist = d),
+          ),
+          const SizedBox(height: AppSpacing.base),
+          // Date + Time
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: DfDateField(
+                  label: 'Date',
+                  required: true,
+                  value: _selectedDate,
+                  errorText: _dateError ? 'Date requise' : null,
+                  onTap: () => showDfDatePicker(
+                    context,
+                    _selectedDate,
+                    (d) => setState(() {
+                      _selectedDate = d;
+                      _dateError = false;
+                    }),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.base),
-            // Dentist picker
-            Text('DENTISTE',
-                style: TextStyle(
-                    fontFamily: 'SpaceGrotesk',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: DfColors.dimTextColor(context),
-                    letterSpacing: 1.2)),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: DfColors.surface3(context),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: DfColors.borderColor(context)),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: DfPickerField(
+                  label: 'Heure',
+                  value: timeLabel,
+                  hint: 'Heure',
+                  icon: Icons.access_time_rounded,
+                  onTap: () async {
+                    final t = await showDfTimePicker(context, _selectedTime);
+                    if (t != null) setState(() => _selectedTime = t);
+                  },
+                ),
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: DropdownButtonHideUnderline(
-                child: Obx(() => DropdownButton<Dentist>(
-                      value: _selectedDentist,
-                      isExpanded: true,
-                      hint: Text('Sélectionner un dentiste',
-                          style: TextStyle(
-                              color: DfColors.subTextColor(context),
-                              fontSize: 14)),
-                      dropdownColor: DfColors.surface1(context),
-                      items: widget.vm.dentists
-                          .map((d) => DropdownMenuItem<Dentist>(
-                                value: d,
-                                child: Text(d.fullName,
-                                    style: const TextStyle(fontSize: 14)),
-                              ))
-                          .toList(),
-                      onChanged: (d) => setState(() => _selectedDentist = d),
-                    )),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.base),
-            DfDateField(
-              label: 'Date',
-              value: _selectedDate,
-              onTap: () => showDfDatePicker(
-                context,
-                _selectedDate,
-                (d) => setState(() => _selectedDate = d),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.base),
-            DfPickerField(
-              label: 'Heure',
-              value: _selectedTime != null
-                  ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-                  : null,
-              hint: 'Sélectionner l\'heure',
-              icon: Icons.access_time_rounded,
-              onTap: () async {
-                final t = await showDfTimePicker(context, _selectedTime);
-                if (t != null) setState(() => _selectedTime = t);
-              },
-            ),
-            const SizedBox(height: AppSpacing.base),
-            DfTextField(
-              label: 'Motif',
-              hint: 'Raison du rendez-vous',
-              controller: _motifCtrl,
-              maxLines: 2,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            DfPrimaryButton(
-              label: 'Enregistrer',
-              loading: _saving,
-              icon: Icons.save_rounded,
-              onPressed: _submit,
-            ),
-            const SizedBox(height: AppSpacing.base),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.base),
+          // Duration
+          DfDropdownField<_DurationOption>(
+            label: 'Durée estimée',
+            items: _durations,
+            labelOf: (d) => d.label,
+            value: _duration,
+            onChanged: (d) => setState(() => _duration = d ?? _durations[1]),
+          ),
+          const SizedBox(height: AppSpacing.base),
+          // Motif
+          DfTextField(
+            label: 'Motif de consultation',
+            hint: 'Ex: Détartrage, Soin carie, Urgence...',
+            controller: _motifCtrl,
+          ),
+          const SizedBox(height: AppSpacing.base),
+          // Notes
+          DfTextField(
+            label: 'Notes additionnelles',
+            hint: 'Annotations optionnelles...',
+            controller: _noteCtrl,
+            maxLines: 2,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          DfPrimaryButton(
+            label: 'Valider le rendez-vous',
+            loading: _saving,
+            icon: Icons.check_rounded,
+            onPressed: _submit,
+          ),
+          const SizedBox(height: AppSpacing.base),
+        ],
       ),
     );
   }

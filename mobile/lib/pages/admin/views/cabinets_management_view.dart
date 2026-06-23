@@ -38,10 +38,23 @@ class CabinetsManagementView extends StatelessWidget {
         }
         return RefreshIndicator(
           onRefresh: vm.loadCabinets,
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-                AppSpacing.base, AppSpacing.base, AppSpacing.base, 100),
-            itemCount: vm.cabinets.length,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.base,
+                    AppSpacing.base, AppSpacing.base, AppSpacing.sm),
+                child: DfSectionLabel(
+                  padding: EdgeInsets.zero,
+                  title:
+                      'Cabinets cliniques clientèle (${vm.cabinets.length})',
+                ),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.base, 0, AppSpacing.base, 100),
+                  itemCount: vm.cabinets.length,
             separatorBuilder: (_, __) =>
                 const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
@@ -96,13 +109,9 @@ class CabinetsManagementView extends StatelessWidget {
                             ],
                           ),
                         ),
-                        DfStatusBadge(
-                          label: isActive ? 'Actif' : 'Suspendu',
-                          color: isActive ? DfColors.green : DfColors.red,
-                          faintColor: isActive
-                              ? DfColors.greenFaintLight
-                              : DfColors.redFaintLight,
-                        ),
+                        isActive
+                            ? DfStatusBadge.success(context, 'Actif')
+                            : DfStatusBadge.danger(context, 'Suspendu'),
                       ],
                     ),
                     // Details
@@ -194,6 +203,9 @@ class CabinetsManagementView extends StatelessWidget {
                 ),
               );
             },
+                ),
+              ),
+            ],
           ),
         );
       }),

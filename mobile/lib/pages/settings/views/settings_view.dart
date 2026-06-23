@@ -87,15 +87,61 @@ class _SettingsViewState extends State<SettingsView> {
                                 value: 'en',
                                 child: Text('English',
                                     style: TextStyle(fontSize: 13))),
+                            DropdownMenuItem(
+                                value: 'ar',
+                                child: Text('العربية',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (lang) {
                             if (lang == null) return;
-                            c.changeLocale(lang == 'fr'
-                                ? const Locale('fr', 'FR')
-                                : const Locale('en', 'US'));
+                            if (lang == 'fr') {
+                              c.changeLocale(const Locale('fr', 'FR'));
+                            } else if (lang == 'en') {
+                              c.changeLocale(const Locale('en', 'US'));
+                            } else if (lang == 'ar') {
+                              c.changeLocale(const Locale('ar', 'TN'));
+                            }
                           },
                         ),
                       ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          // Notifications section
+          const DfSectionLabel(title: 'Notifications & Alertes'),
+          const SizedBox(height: AppSpacing.sm),
+          DfCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                GetBuilder<AppController>(
+                  builder: (c) => DfSettingRow(
+                    icon: Icons.alternate_email_rounded,
+                    label: 'Rapports quotidiens par e-mail',
+                    trailing: Checkbox(
+                      value: c.emailNotifications,
+                      onChanged: (v) {
+                        if (v != null) c.setEmailNotifications(v);
+                      },
+                      activeColor: DfColors.brandPrimary(context),
+                    ),
+                  ),
+                ),
+                Divider(height: 1, color: DfColors.borderColor(context)),
+                GetBuilder<AppController>(
+                  builder: (c) => DfSettingRow(
+                    icon: Icons.volume_up_rounded,
+                    label: 'Signaux sonores (nouveaux RDV)',
+                    trailing: Checkbox(
+                      value: c.soundAlerts,
+                      onChanged: (v) {
+                        if (v != null) c.setSoundAlerts(v);
+                      },
+                      activeColor: DfColors.brandPrimary(context),
                     ),
                   ),
                 ),
