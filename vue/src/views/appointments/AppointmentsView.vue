@@ -1,13 +1,13 @@
 <script setup>
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 import api from '@/services/api'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppointmentAddDialog from './AppointmentAddDialog.vue'
 
 const route = useRoute()
-const toast = useToast()
+
 
 const loading = ref(false)
 const appointments = ref([])
@@ -41,12 +41,7 @@ const fetchDentists = async () => {
     }
   } catch (error) {
     console.error("Failed to fetch dentists from database:", error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de récupérer la liste des praticiens.',
-      life: 4000
-    })
+    toast.error(`Erreur\nImpossible de récupérer la liste des praticiens.`, { autoClose: 4000 })
   }
 }
 
@@ -91,12 +86,7 @@ const fetchData = async () => {
     patients.value = patientsRes.data?.items || patientsRes.data || []
   } catch (error) {
     console.error('[API Error] fetchData failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de charger le planning. Vérifiez la connexion au serveur.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de charger le planning. Vérifiez la connexion au serveur.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -153,17 +143,12 @@ const handleSaveApp = async (formData) => {
   try {
     const res = await api.post('/rendezvous', formData)
     console.log(`[API Response] POST /rendezvous | Status: ${res.status}`, res.data)
-    toast.add({ severity: 'success', summary: 'RDV Planifié', detail: 'Le rendez-vous a été planifié.', life: 3000 })
+    toast.success(`RDV Planifié\nLe rendez-vous a été planifié.`, { autoClose: 3000 })
     showAddDialog.value = false
     fetchData()
   } catch (error) {
     console.error('[API Error] handleSaveApp failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de planification',
-      detail: 'Impossible d\'enregistrer le rendez-vous.',
-      life: 5000
-    })
+    toast.error(`Erreur de planification\nImpossible d'enregistrer le rendez-vous.`, { autoClose: 5000 })
   } finally {
     savingApp.value = false
   }
@@ -183,16 +168,11 @@ const confirmCancel = async () => {
   try {
     const res = await api.delete(`/rendezvous/${id}`)
     console.log(`[API Response] DELETE /rendezvous/${id} | Status: ${res.status}`, res.data)
-    toast.add({ severity: 'success', summary: 'Succès', detail: 'Rendez-vous annulé.', life: 3000 })
+    toast.success(`Succès\nRendez-vous annulé.`, { autoClose: 3000 })
     fetchData()
   } catch (error) {
     console.error('[API Error] confirmCancel failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur d\'annulation',
-      detail: 'Impossible d\'annuler ce rendez-vous.',
-      life: 5000
-    })
+    toast.error(`Erreur d'annulation\nImpossible d'annuler ce rendez-vous.`, { autoClose: 5000 })
   } finally {
     appointmentIdToCancel.value = null
   }
@@ -201,16 +181,11 @@ const confirmCancel = async () => {
 const confirmArrival = async (id) => {
   try {
     await api.post(`/rendezvous/${id}/checkin`)
-    toast.add({ severity: 'success', summary: 'Arrivée confirmée', detail: 'Le médecin a été notifié.', life: 3000 })
+    toast.success(`Arrivée confirmée\nLe médecin a été notifié.`, { autoClose: 3000 })
     fetchData()
   } catch (error) {
     console.error('[API Error] checkin failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de confirmer l\'arrivée.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de confirmer l'arrivée.`, { autoClose: 5000 })
   }
 }
 

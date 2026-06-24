@@ -37,6 +37,15 @@ Future<void> main() async {
 
   try {
     await SignalRService.instance.init();
+    // Surface every real-time notification as a local OS notification,
+    // regardless of which screen is currently open.
+    SignalRService.instance.notificationEventsStream.stream.listen((e) {
+      NotificationService.show(
+        title: e.title.isEmpty ? 'Notification' : e.title,
+        body: e.description,
+        id: (int.tryParse(e.id) ?? e.id.hashCode).abs() % 2147483647,
+      );
+    });
   } catch (e) {
     debugPrint('[SignalR] init failed: $e');
   }

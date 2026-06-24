@@ -12,6 +12,7 @@ using Dentiste.Core.Features.RendezVous.Commands.Delete;
 using Dentiste.Core.Features.RendezVous.Queries.GetById;
 using Dentiste.Core.Features.RendezVous.Queries.GetAll;
 using Dentiste.Core.Features.RendezVous.Queries.GetPending;
+using Dentiste.Core.Features.Appointments.Queries.GetWaitingRoom;
 
 namespace Dentiste.api.Controllers;
 
@@ -110,6 +111,21 @@ public class RendezVousController : ControllerBase
     public async Task<IActionResult> GetPending()
     {
         var result = await _sender.Send(new GetPendingAppointmentsQuery());
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+        return BadRequest(result.Error);
+    }
+
+    /// <summary>
+    /// Patients checked in (status "EnConsultation") and waiting for the doctor.
+    /// Pass dentisteId to restrict the queue to a single practitioner's chair.
+    /// </summary>
+    [HttpGet("waiting-room")]
+    public async Task<IActionResult> GetWaitingRoom([FromQuery] int? dentisteId = null)
+    {
+        var result = await _sender.Send(new GetWaitingRoomQuery { DentisteId = dentisteId });
         if (result.IsSuccess)
         {
             return Ok(result.Value);

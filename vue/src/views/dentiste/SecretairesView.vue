@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 
-const toast = useToast()
+
 const authStore = useAuthStore()
 
 const loading = ref(false)
@@ -48,12 +48,7 @@ const fetchSecretaires = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch secretaries:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger la liste des secrétaires.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger la liste des secrétaires.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -105,12 +100,7 @@ const openEditDialog = (sec) => {
 // Save (Create or Update)
 const saveSecretaire = async () => {
   if (!form.value.nom || !form.value.prenom || !form.value.email || (!isEditMode.value && !form.value.password)) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Champs requis',
-      detail: 'Veuillez remplir tous les champs obligatoires.',
-      life: 3000
-    })
+    toast.warning(`Champs requis\nVeuillez remplir tous les champs obligatoires.`, { autoClose: 3000 })
     return
   }
 
@@ -128,12 +118,7 @@ const saveSecretaire = async () => {
         password: form.value.password || undefined
       }
       await api.put(`/users/${form.value.id}`, payload)
-      toast.add({
-        severity: 'success',
-        summary: 'Secrétaire modifiée',
-        detail: `Le profil de ${form.value.prenom} ${form.value.nom} a été mis à jour.`,
-        life: 3000
-      })
+      toast.success(`Secrétaire modifiée\nLe profil de ${form.value.prenom} ${form.value.nom} a été mis à jour.`, { autoClose: 3000 })
     } else {
       const payload = {
         username: form.value.username || form.value.email,
@@ -144,24 +129,14 @@ const saveSecretaire = async () => {
         roleId: 3
       }
       await api.post('/users', payload)
-      toast.add({
-        severity: 'success',
-        summary: 'Secrétaire ajoutée',
-        detail: `Le compte a été créé. Un e-mail d'invitation avec les identifiants a été envoyé à ${form.value.email}.`,
-        life: 5000
-      })
+      toast.success(`Secrétaire ajoutée\nLe compte a été créé. Un e-mail d'invitation avec les identifiants a été envoyé à ${form.value.email}.`, { autoClose: 5000 })
     }
     showDialog.value = false
     fetchSecretaires()
   } catch (error) {
     console.error('Failed to save secretary:', error)
     const errorMsg = error.response?.data?.error || 'Une erreur est survenue lors de l\'enregistrement.'
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: errorMsg,
-      life: 4000
-    })
+    toast.error(`Erreur\n${errorMsg}`, { autoClose: 4000 })
   } finally {
     saving.value = false
   }
@@ -172,21 +147,11 @@ const deleteSecretaire = async (sec) => {
   if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement le compte de ${sec.prenom} ${sec.nom} ?`)) {
     try {
       await api.delete(`/users/${sec.id}`)
-      toast.add({
-        severity: 'success',
-        summary: 'Compte supprimé',
-        detail: `Le compte de la secrétaire a été supprimé avec succès.`,
-        life: 3000
-      })
+      toast.success(`Compte supprimé\nLe compte de la secrétaire a été supprimé avec succès.`, { autoClose: 3000 })
       fetchSecretaires()
     } catch (error) {
       console.error('Failed to delete secretary:', error)
-      toast.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de supprimer ce compte.',
-        life: 3000
-      })
+      toast.error(`Erreur\nImpossible de supprimer ce compte.`, { autoClose: 3000 })
     }
   }
 }

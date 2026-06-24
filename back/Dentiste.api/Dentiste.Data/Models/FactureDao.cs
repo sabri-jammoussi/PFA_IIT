@@ -36,6 +36,12 @@ public class FactureDao
     public int PatientId { get; set; }
     public PatientDao Patient { get; set; } = null!;
 
+    // Optional link to the consultation that generated this invoice.
+    // Used to guarantee one invoice per finalized consultation (no double billing).
+    [Column("FAC_CONSULTATION_ID")]
+    public int? ConsultationId { get; set; }
+    public ConsultationDao? Consultation { get; set; }
+
     public ICollection<PaiementDao> Paiements { get; set; } = new List<PaiementDao>();
 
     // Multi-tenant Foreign Key

@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const isOpen = ref(true)
 const isEditing = ref(false)
 const loading = ref(false)
@@ -33,12 +33,7 @@ const fetchSmtpSettings = async () => {
     }
   } catch (error) {
     console.error('[API Error] fetchSmtpSettings failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les paramètres SMTP.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger les paramètres SMTP.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -66,22 +61,12 @@ const saveSmtpSettings = async () => {
     }
     
     await api.post('/options/smtp', payload)
-    toast.add({
-      severity: 'success',
-      summary: 'Succès',
-      detail: 'Configuration SMTP mise à jour avec succès.',
-      life: 3000
-    })
+    toast.success(`Succès\nConfiguration SMTP mise à jour avec succès.`, { autoClose: 3000 })
     isEditing.value = false
     fetchSmtpSettings()
   } catch (error) {
     console.error('[API Error] saveSmtpSettings failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de sauvegarde',
-      detail: 'Impossible de sauvegarder les paramètres SMTP.',
-      life: 5000
-    })
+    toast.error(`Erreur de sauvegarde\nImpossible de sauvegarder les paramètres SMTP.`, { autoClose: 5000 })
   } finally {
     saving.value = false
   }

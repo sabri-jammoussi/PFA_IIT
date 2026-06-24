@@ -2,10 +2,10 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const loading = ref(true)
 const records = ref({
@@ -44,12 +44,7 @@ const fetchPortalData = async () => {
     appointments.value = apptRes.data
   } catch (error) {
     console.error('Failed to load patient portal data:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de charger vos données médicales.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de charger vos données médicales.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -82,12 +77,7 @@ const fetchAvailability = async () => {
     availabilitySlots.value = res.data || []
   } catch (error) {
     console.error('Failed to load slot availability:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les disponibilités du praticien.',
-      life: 4000
-    })
+    toast.error(`Erreur\nImpossible de charger les disponibilités du praticien.`, { autoClose: 4000 })
   } finally {
     loadingSlots.value = false
   }
@@ -109,12 +99,7 @@ const resetBookingForm = () => {
 
 const handleRequestAppointment = async () => {
   if (!bookingForm.value.dateHeure || !bookingForm.value.motif || !selectedDentistId.value) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Formulaire incomplet',
-      detail: 'Veuillez sélectionner un dentiste, un jour, une heure et saisir le motif.',
-      life: 3000
-    })
+    toast.warning(`Formulaire incomplet\nVeuillez sélectionner un dentiste, un jour, une heure et saisir le motif.`, { autoClose: 3000 })
     return
   }
 
@@ -127,23 +112,13 @@ const handleRequestAppointment = async () => {
       dentisteId: selectedDentistId.value
     })
 
-    toast.add({
-      severity: 'success',
-      summary: 'Demande envoyée',
-      detail: 'Votre demande de rendez-vous a été soumise au secrétariat.',
-      life: 4000
-    })
+    toast.success(`Demande envoyée\nVotre demande de rendez-vous a été soumise au secrétariat.`, { autoClose: 4000 })
     showBookModal.value = false
     resetBookingForm()
     await fetchPortalData()
   } catch (error) {
     console.error('Failed to submit appointment request:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible d\'envoyer votre demande de rendez-vous.',
-      life: 4000
-    })
+    toast.error(`Erreur\nImpossible d'envoyer votre demande de rendez-vous.`, { autoClose: 4000 })
   } finally {
     bookingLoading.value = false
   }

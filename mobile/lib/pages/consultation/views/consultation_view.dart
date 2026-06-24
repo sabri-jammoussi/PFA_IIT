@@ -7,6 +7,7 @@ import 'package:dentiflow/core/widgets/df_text_field.dart';
 import 'package:dentiflow/core/widgets/df_dropdown_field.dart';
 import 'package:dentiflow/pages/medical_acts/models/medical_act_model.dart';
 import 'package:dentiflow/pages/medical_acts/services/medical_acts_service.dart';
+import 'package:dentiflow/pages/stock/models/stock_model.dart';
 import '../models/consultation_model.dart';
 import '../viewmodels/consultation_viewmodel.dart';
 
@@ -39,6 +40,15 @@ String _fmtDate(String? iso) {
   return '${two(l.day)}/${two(l.month)}/${l.year}';
 }
 
+String _fmtTime(String? iso) {
+  if (iso == null || iso.isEmpty) return '';
+  final DateTime? d = DateTime.tryParse(iso);
+  if (d == null) return '';
+  final DateTime l = d.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(l.hour)}:${two(l.minute)}';
+}
+
 class ConsultationView extends StatefulWidget {
   const ConsultationView({super.key});
 
@@ -48,7 +58,6 @@ class ConsultationView extends StatefulWidget {
 
 class _ConsultationViewState extends State<ConsultationView> {
   late final ConsultationViewModel _vm;
-  late final int _patientId;
 
   List<MedicalAct> _acts = [];
   MedicalAct? _selectedAct;
@@ -57,20 +66,26 @@ class _ConsultationViewState extends State<ConsultationView> {
   final TextEditingController _treatmentNotesCtrl = TextEditingController();
   final TextEditingController _clinicalNotesCtrl = TextEditingController();
   final TextEditingController _prescriptionCtrl = TextEditingController();
+  final TextEditingController _consoQtyCtrl =
+      TextEditingController(text: '1');
+
+  StockItem? _selectedArticle;
 
   bool _savingTreatment = false;
   bool _savingNotes = false;
   bool _savingPrescription = false;
+  bool _savingConso = false;
 
   @override
   void initState() {
     super.initState();
     _vm = Get.put(ConsultationViewModel());
     final args = Get.arguments;
-    _patientId = args is int
+    final int argId = args is int
         ? args
         : (args is Map ? (args['patientId'] ?? 0) as int : 0);
-    if (_patientId > 0) _vm.loadForPatient(_patientId);
+    _vm.loadWaitingRoom();
+    if (argId > 0) _vm.loadForPatient(argId);
     _loadActs();
   }
 
@@ -87,6 +102,7 @@ class _ConsultationViewState extends State<ConsultationView> {
     _treatmentNotesCtrl.dispose();
     _clinicalNotesCtrl.dispose();
     _prescriptionCtrl.dispose();
+    _consoQtyCtrl.dispose();
     super.dispose();
   }
 
@@ -144,6 +160,73 @@ class _ConsultationViewState extends State<ConsultationView> {
     }
   }
 
+  Future<void> _saveConsommation() async {
+    if (_selectedArticle == null) {
+      showThemedSnackbar('Article requis', 'Sélectionnez l\'article consommé.',
+          type: SnackbarType.warning);
+      return;
+    }
+    final int qty = int.tryParse(_consoQtyCtrl.text) ?? 0;
+    if (qty <= 0) {
+      showThemedSnackbar('Quantité invalide', 'La quantité doit être > 0.',
+          type: SnackbarType.warning);
+      return;
+    }
+    setState(() => _savingConso = true);
+    try {
+      await _vm.addConsommation(articleId: _selectedArticle!.id, quantite: qty);
+      setState(() {
+        _selectedArticle = null;
+        _consoQtyCtrl.text = '1';
+      });
+      showThemedSnackbar('Consommation enregistrée', 'Le stock a été décrémenté.',
+          type: SnackbarType.success);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _savingConso = false);
+    }
+  }
+
+  Future<void> _finalize() async {
+    if (_vm.activeConsultationId == 0 || _vm.consultationTotal <= 0) {
+      showThemedSnackbar('Aucun soin',
+          'Enregistrez au moins un soin avant de clôturer la séance.',
+          type: SnackbarType.warning);
+      return;
+    }
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clôturer la consultation'),
+        content: Text(
+            'Générer la facture (${_vm.consultationTotal.toStringAsFixed(2)} DT) et notifier la secrétaire pour l\'encaissement ?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Annuler')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Confirmer')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+
+    try {
+      final facture = await _vm.finalize();
+      if (facture != null) {
+        final montant =
+            (facture['montantTotal'] as num?)?.toStringAsFixed(2) ?? '0.00';
+        showThemedSnackbar('Consultation clôturée',
+            'Facture ${facture['numeroFacture'] ?? ''} — $montant DT envoyée à la caisse.',
+            type: SnackbarType.success);
+      }
+    } catch (e) {
+      showThemedSnackbar('Erreur', 'Impossible de clôturer la consultation.',
+          type: SnackbarType.error);
+    }
+  }
+
   Future<void> _savePrescription() async {
     if (_prescriptionCtrl.text.trim().isEmpty) {
       showThemedSnackbar('Prescription vide', 'Veuillez rédiger un traitement.',
@@ -165,63 +248,199 @@ class _ConsultationViewState extends State<ConsultationView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_patientId == 0) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Consultation')),
-        body: const DfEmptyState(
-          icon: Icons.person_search_rounded,
-          title: 'Aucun patient sélectionné',
-          subtitle:
-              'Ouvrez un dossier patient depuis la liste des patients pour démarrer une consultation.',
-        ),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Consultation')),
+      appBar: AppBar(
+        title: const Text('Consultation'),
+        actions: [
+          Obx(() => _vm.selectedPatientId.value > 0
+              ? IconButton(
+                  icon: const Icon(Icons.groups_rounded),
+                  tooltip: 'Salle d\'attente',
+                  onPressed: () {
+                    _vm.clearSelection();
+                    _vm.loadWaitingRoom();
+                  },
+                )
+              : const SizedBox.shrink()),
+        ],
+      ),
       body: Obx(() {
         if (_vm.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
+        final int pid = _vm.selectedPatientId.value;
         return RefreshIndicator(
-          onRefresh: () => _vm.loadForPatient(_patientId),
+          onRefresh: () async {
+            await _vm.loadWaitingRoom();
+            if (pid > 0) await _vm.loadForPatient(pid);
+          },
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.base),
             children: [
-              _MedicalAlertBanner(patient: _vm.patient.value),
+              // ===== Waiting room (checked-in patients) =====
+              Obx(() => _buildWaitingRoom(context)),
               const SizedBox(height: AppSpacing.lg),
 
-              // ===== FDI dental chart =====
-              const DfSectionLabel(title: 'Schéma dentaire interactif (FDI)'),
-              const SizedBox(height: AppSpacing.sm),
-              _ToothChart(vm: _vm),
-              const SizedBox(height: AppSpacing.base),
+              if (pid == 0)
+                _buildNoPatientPrompt(context)
+              else ...[
+                _MedicalAlertBanner(patient: _vm.patient.value),
+                const SizedBox(height: AppSpacing.lg),
 
-              // ===== Selected tooth history =====
-              Obx(() => _ToothHistory(vm: _vm)),
-              const SizedBox(height: AppSpacing.lg),
+                // ===== FDI dental chart =====
+                const DfSectionLabel(title: 'Schéma dentaire interactif (FDI)'),
+                const SizedBox(height: AppSpacing.sm),
+                _ToothChart(vm: _vm),
+                const SizedBox(height: AppSpacing.base),
 
-              // ===== Log a treatment =====
-              const DfSectionLabel(title: 'Enregistrer un soin'),
-              const SizedBox(height: AppSpacing.sm),
-              _buildTreatmentForm(context),
-              const SizedBox(height: AppSpacing.lg),
+                // ===== Selected tooth history =====
+                Obx(() => _ToothHistory(vm: _vm)),
+                const SizedBox(height: AppSpacing.lg),
 
-              // ===== Clinical notes journal =====
-              const DfSectionLabel(title: 'Journal des notes cliniques'),
-              const SizedBox(height: AppSpacing.sm),
-              _buildNotesJournal(context),
-              const SizedBox(height: AppSpacing.lg),
+                // ===== Log a treatment =====
+                const DfSectionLabel(title: 'Enregistrer un soin'),
+                const SizedBox(height: AppSpacing.sm),
+                _buildTreatmentForm(context),
+                const SizedBox(height: AppSpacing.lg),
 
-              // ===== Prescription form =====
-              const DfSectionLabel(title: 'Formulaire d\'ordonnance'),
-              const SizedBox(height: AppSpacing.sm),
-              _buildPrescriptionForm(context),
+                // ===== Consumed stock articles =====
+                const DfSectionLabel(title: 'Articles consommés'),
+                const SizedBox(height: AppSpacing.sm),
+                Obx(() => _buildConsommablesCard(context)),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ===== Close & invoice =====
+                Obx(() => _buildFinalizeCard(context)),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ===== Clinical notes journal =====
+                const DfSectionLabel(title: 'Journal des notes cliniques'),
+                const SizedBox(height: AppSpacing.sm),
+                _buildNotesJournal(context),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ===== Prescription form =====
+                const DfSectionLabel(title: 'Formulaire d\'ordonnance'),
+                const SizedBox(height: AppSpacing.sm),
+                _buildPrescriptionForm(context),
+              ],
               const SizedBox(height: 90),
             ],
           ),
         );
       }),
+    );
+  }
+
+  Widget _buildNoPatientPrompt(BuildContext context) {
+    return DfCard(
+      child: Column(
+        children: [
+          Icon(Icons.person_search_rounded,
+              size: 40, color: DfColors.mutedTextColor(context)),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Aucun patient sélectionné',
+            style: TextStyle(
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: DfColors.textColor(context),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Choisissez un patient dans la salle d\'attente ci-dessus, ou ouvrez un dossier depuis la liste des patients.',
+            textAlign: TextAlign.center,
+            style:
+                TextStyle(fontSize: 13, color: DfColors.mutedTextColor(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWaitingRoom(BuildContext context) {
+    final List<WaitingEntry> list = _vm.waitingRoom.toList();
+    if (list.isEmpty && _vm.selectedPatientId.value > 0) {
+      return const SizedBox.shrink();
+    }
+    return DfCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.groups_rounded, size: 18, color: DfColors.success(context)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Salle d\'attente (${list.length})',
+                  style: TextStyle(
+                    fontFamily: 'SpaceGrotesk',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: DfColors.textColor(context),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.refresh_rounded,
+                    size: 18, color: DfColors.mutedTextColor(context)),
+                onPressed: _vm.loadWaitingRoom,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          if (list.isEmpty)
+            Text('Aucun patient en attente.',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                    color: DfColors.mutedTextColor(context)))
+          else
+            ...list.map((e) {
+              final bool selected = _vm.selectedPatientId.value == e.patientId;
+              return Container(
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? DfColors.infoFaint(context)
+                      : DfColors.surface3(context),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: selected
+                        ? DfColors.info(context)
+                        : DfColors.borderColor(context),
+                  ),
+                ),
+                child: ListTile(
+                  onTap: () => _vm.loadForPatient(e.patientId),
+                  title: Text(
+                    e.patientNomComplet,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: DfColors.textColor(context),
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${e.motif ?? 'Consultation'} • ${e.lastVisitDate != null ? 'Dernière visite ${_fmtDate(e.lastVisitDate)}' : 'Nouveau patient'}',
+                    style: TextStyle(
+                        fontSize: 11, color: DfColors.mutedTextColor(context)),
+                  ),
+                  trailing: Text(
+                    _fmtTime(e.arrivalTime),
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: DfColors.mutedTextColor(context)),
+                  ),
+                ),
+              );
+            }),
+        ],
+      ),
     );
   }
 
@@ -256,12 +475,16 @@ class _ConsultationViewState extends State<ConsultationView> {
             value: _selectedAct,
             labelOf: (a) => '${a.libelle} (${a.tarifDeBase.toStringAsFixed(0)} DT)',
             hint: 'Choisir l\'acte',
-            onChanged: (act) => setState(() {
-              _selectedAct = act;
-              if (act != null) {
-                _priceCtrl.text = act.tarifDeBase.toStringAsFixed(2);
-              }
-            }),
+            onChanged: (act) {
+              setState(() {
+                _selectedAct = act;
+                if (act != null) {
+                  _priceCtrl.text = act.tarifDeBase.toStringAsFixed(2);
+                }
+              });
+              // Pre-fill editable consumable suggestions for this act.
+              if (act != null) _vm.loadRecette(act.id);
+            },
           ),
           const SizedBox(height: AppSpacing.base),
           DfDropdownField<_FaceOption>(
@@ -406,6 +629,197 @@ class _ConsultationViewState extends State<ConsultationView> {
               ],
             );
           }),
+        ],
+      ),
+    );
+  }
+  // -------------------------------------------------------------------------
+
+  Widget _buildConsommablesCard(BuildContext context) {
+    return DfCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Editable suggestions from the selected act's recipe
+          if (_vm.recetteSuggestions.isNotEmpty) ...[
+            Text(
+              'SUGGESTIONS (ACTE SÉLECTIONNÉ)',
+              style: TextStyle(
+                fontFamily: 'SpaceGrotesk',
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: DfColors.dimTextColor(context),
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: _vm.recetteSuggestions.map((s) {
+                return ActionChip(
+                  label: Text(
+                    '+ ${s.articleNom ?? 'Article #${s.articleId}'} ×${s.quantiteRequise}',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    StockItem? match;
+                    for (final a in _vm.articles) {
+                      if (a.id == s.articleId) {
+                        match = a;
+                        break;
+                      }
+                    }
+                    setState(() {
+                      _selectedArticle = match;
+                      _consoQtyCtrl.text = s.quantiteRequise.toString();
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: AppSpacing.base),
+          ],
+          DfDropdownField<StockItem>(
+            label: 'Article du stock',
+            items: _vm.articles.toList(),
+            value: _selectedArticle,
+            labelOf: (a) =>
+                '${a.nom} — stock: ${a.quantiteEnStock} ${a.unite}'.trim(),
+            hint: 'Choisir un article',
+            onChanged: (a) => setState(() => _selectedArticle = a),
+          ),
+          const SizedBox(height: AppSpacing.base),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              SizedBox(
+                width: 90,
+                child: DfTextField(
+                  label: 'Quantité',
+                  controller: _consoQtyCtrl,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.base),
+              Expanded(
+                child: DfPrimaryButton(
+                  label: 'Consommer',
+                  loading: _savingConso,
+                  icon: Icons.add_rounded,
+                  onPressed: _saveConsommation,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.base),
+          if (_vm.consommations.isEmpty)
+            Text('Aucun article consommé pour cette séance.',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                    color: DfColors.mutedTextColor(context)))
+          else
+            ..._vm.consommations.map((c) => Container(
+                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: DfColors.surface3(context),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: DfColors.borderColor(context)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${c.articleNom ?? 'Article #${c.articleId}'}  ×${c.quantite} ${c.articleUnite ?? ''}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: DfColors.textColor(context),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline_rounded,
+                            size: 18, color: DfColors.danger(context)),
+                        tooltip: 'Annuler (remet en stock)',
+                        onPressed: () => _vm.deleteConsommation(c.id),
+                      ),
+                    ],
+                  ),
+                )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinalizeCard(BuildContext context) {
+    return DfCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.flag_rounded, size: 18, color: DfColors.success(context)),
+              const SizedBox(width: 8),
+              Text(
+                'Clôture de la séance',
+                style: TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: DfColors.textColor(context),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('TOTAL DES SOINS',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                        color: DfColors.dimTextColor(context),
+                      )),
+                  Text('${_vm.consultationTotal.toStringAsFixed(2)} DT',
+                      style: TextStyle(
+                        fontFamily: 'SpaceGrotesk',
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: DfColors.textColor(context),
+                      )),
+                ],
+              ),
+              Text('${_vm.consommations.length} article(s)',
+                  style: TextStyle(
+                      fontSize: 11, color: DfColors.mutedTextColor(context))),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.base),
+          DfPrimaryButton(
+            label: 'Terminer & envoyer en caisse',
+            loading: _vm.finalizing.value,
+            icon: Icons.send_rounded,
+            onPressed: _finalize,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Génère une facture unique et notifie la secrétaire du montant à encaisser.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: DfColors.mutedTextColor(context)),
+          ),
         ],
       ),
     );

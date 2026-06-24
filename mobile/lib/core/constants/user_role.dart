@@ -14,6 +14,10 @@ extension UserRoleX on UserRole {
 
   static UserRole fromTokenValue(dynamic value) {
     if (value == null) return UserRole.unknown;
+    if (value is List) {
+      if (value.isEmpty) return UserRole.unknown;
+      value = value.first;
+    }
     if (value is int) return fromId(value);
     final String s = value.toString().trim();
     // Numeric string

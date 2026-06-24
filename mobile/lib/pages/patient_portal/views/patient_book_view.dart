@@ -112,42 +112,44 @@ class _PatientBookViewState extends State<PatientBookView> {
                     ),
                     itemCount: _vm.availableSlots.length,
                     itemBuilder: (context, index) {
-                      final slot = _vm.availableSlots[index];
-                      final bool selected = _vm.selectedSlot.value == slot;
-                      final bool isAvailable = slot.isAvailable;
+                      return Obx(() {
+                        final slot = _vm.availableSlots[index];
+                        final bool selected = _vm.selectedSlot.value == slot;
+                        final bool isAvailable = slot.isAvailable;
 
-                      return GestureDetector(
-                        onTap: isAvailable ? () => _vm.selectedSlot.value = slot : null,
-                        child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: !isAvailable
-                                ? (Theme.of(context).brightness == Brightness.dark
-                                    ? DfColors.surface3(context)
-                                    : Colors.grey.shade200)
-                                : selected
-                                    ? primary
-                                    : DfColors.surface2(context),
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            border: Border.all(
-                              color: selected ? primary : DfColors.borderColor(context),
-                            ),
-                          ),
-                          child: Text(
-                            slot.time,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              decoration: !isAvailable ? TextDecoration.lineThrough : null,
+                        return GestureDetector(
+                          onTap: isAvailable ? () => _vm.selectedSlot.value = slot : null,
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
                               color: !isAvailable
-                                  ? DfColors.dimTextColor(context)
+                                  ? (Theme.of(context).brightness == Brightness.dark
+                                      ? DfColors.surface3(context)
+                                      : Colors.grey.shade200)
                                   : selected
-                                      ? Colors.white
-                                      : DfColors.textColor(context),
+                                      ? primary
+                                      : DfColors.surface2(context),
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              border: Border.all(
+                                color: selected ? primary : DfColors.borderColor(context),
+                              ),
+                            ),
+                            child: Text(
+                              slot.time,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                decoration: !isAvailable ? TextDecoration.lineThrough : null,
+                                color: !isAvailable
+                                    ? DfColors.dimTextColor(context)
+                                    : selected
+                                        ? Colors.white
+                                        : DfColors.textColor(context),
+                              ),
                             ),
                           ),
-                        ),
-                      );
+                        );
+                      });
                     },
                   ),
               ],

@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const loading = ref(false)
 const saving = ref(false)
 
@@ -33,12 +33,7 @@ const fetchCabinetSettings = async () => {
     }
   } catch (error) {
     console.error('[API Error] fetchCabinetSettings failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les paramètres SMTP du cabinet.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger les paramètres SMTP du cabinet.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -57,21 +52,11 @@ const saveCabinetSettings = async () => {
     }
     
     await api.post('/cabinet/settings/smtp', payload)
-    toast.add({
-      severity: 'success',
-      summary: 'Succès',
-      detail: 'Configuration SMTP du cabinet mise à jour avec succès.',
-      life: 3000
-    })
+    toast.success(`Succès\nConfiguration SMTP du cabinet mise à jour avec succès.`, { autoClose: 3000 })
     fetchCabinetSettings()
   } catch (error) {
     console.error('[API Error] saveCabinetSettings failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de sauvegarde',
-      detail: 'Impossible de sauvegarder la configuration du cabinet.',
-      life: 5000
-    })
+    toast.error(`Erreur de sauvegarde\nImpossible de sauvegarder la configuration du cabinet.`, { autoClose: 5000 })
   } finally {
     saving.value = false
   }

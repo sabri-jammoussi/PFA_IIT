@@ -3,11 +3,13 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Dentiste.Data;
 using Dentiste.Core.Features.Consultations;
 using Dentiste.Core.Features.Consultations.Commands.Add;
 using Dentiste.Core.Features.Consultations.Commands.Update;
 using Dentiste.Core.Features.Consultations.Commands.Delete;
+using Dentiste.Core.Features.Consultations.Commands.Finalize;
 using Dentiste.Core.Features.Consultations.Queries.GetById;
 using Dentiste.Core.Features.Consultations.Queries.GetAll;
 
@@ -100,5 +102,31 @@ public class ConsultationsController : ControllerBase
             return NoContent();
         }
         return BadRequest(result.Error);
+    }
+
+    /// <summary>
+    /// Closes a consultation: generates a single invoice equal to the sum of the
+    /// visit's treatments and notifies the secretary (real-time + notification center)
+    /// of the amount to collect from the patient.
+    /// </summary>
+    [HttpPost("{id:int}/finalize")]
+    public async Task<IActionResult> Finalize(
+        int id,
+        [FromServices] Microsoft.AspNetCore.SignalR.IHubContext<Dentiste.api.Hubs.ClinicHub> hubContext,
+        [FromServices] Dentiste.Data.Infrastructure.ITenantProvider tenantProvider)
+    {
+        var result = await _sender.Send(new FinalizeConsultationCommand { ConsultationId = id });
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        // Live toast for the secretary's web client (same ClinicHub channel as check-in).
+        // The persisted notification (notification center + mobile) is handled separately
+        // by the notification microservice via the finalize-consultation event.
+        var cabinetId = tenantProvider.GetCabinetId();
+        await hubContext.Clients.Group($"cabinet_{cabinetId}").SendAsync("NotifyInvoiceReady", result.Value);
+
+        return Ok(result.Value);
     }
 }

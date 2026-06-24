@@ -1,17 +1,18 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
-import { computed, ref, onMounted } from 'vue'
+import { toast } from 'vue3-toastify'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificationsStore } from '@/stores/notifications'
 import NotificationsSidebar from '@/components/Notifications/NotificationsSidebar.vue'
 import UserProfilePicture from '@/components/UserProfilePicture.vue'
+import signalRService from '@/services/signalrService'
 
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const sidebarOpen = ref(true)
 const userDropdownOpen = ref(false)
@@ -31,10 +32,27 @@ const notificationsStore = useNotificationsStore()
 const unreadCount = computed(() => notificationsStore.notificationsCount)
 const notificationsSidebarVisible = ref(false)
 
+const handleInvoiceReady = (payload) => {
+  // Secretaries get a live toast when a doctor closes a consultation.
+  if (authStore.role === 3) {
+    const montant = Number(payload?.montantTotal || 0).toFixed(2)
+    toast.success(`💰 Encaissement à effectuer\n${payload?.patientNomComplet || 'Patient'} — ${montant} DT (facture ${payload?.numeroFacture || ''}).`, { autoClose: 10000 })
+    notificationsStore.refreshNotifications()
+  }
+}
+
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     await notificationsStore.refreshNotifications()
+
+    // Live clinic events (real-time toast for the secretary's cashier workflow).
+    signalRService.startConnection()
+    signalRService.on('NotifyInvoiceReady', handleInvoiceReady)
   }
+})
+
+onUnmounted(() => {
+  signalRService.off('NotifyInvoiceReady', handleInvoiceReady)
 })
 
 const sidebarHeader = computed(() => {
@@ -155,20 +173,10 @@ const menuItems = computed(() => {
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    toast.add({
-      severity: 'info',
-      summary: 'Déconnexion',
-      detail: 'Session fermée avec succès.',
-      life: 3000
-    })
+    toast.info(`Déconnexion\nSession fermée avec succès.`, { autoClose: 3000 })
     router.push({ name: 'login' })
   } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Erreur lors de la déconnexion.',
-      life: 3000
-    })
+    toast.error(`Erreur\nErreur lors de la déconnexion.`, { autoClose: 3000 })
   }
 }
 

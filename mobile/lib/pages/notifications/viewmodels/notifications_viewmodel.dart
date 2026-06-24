@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:get/get.dart';
+import 'package:dentiflow/core/services/signalr_service.dart';
 import '../models/notification_model.dart';
 import '../services/notification_service_api.dart';
 
@@ -7,10 +9,21 @@ class NotificationsViewModel extends GetxController {
   final RxInt unreadCount = 0.obs;
   final RxBool isLoading = false.obs;
 
+  StreamSubscription<SignalRNotificationEvent>? _liveSub;
+
   @override
   void onInit() {
     super.onInit();
     load();
+    // Refresh the list live whenever a real-time notification arrives.
+    _liveSub = SignalRService.instance.notificationEventsStream.stream
+        .listen((_) => load());
+  }
+
+  @override
+  void onClose() {
+    _liveSub?.cancel();
+    super.onClose();
   }
 
   Future<void> load() async {

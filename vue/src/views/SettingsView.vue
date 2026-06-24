@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const savingPassword = ref(false)
 const userProfile = ref(null)
@@ -55,17 +55,17 @@ const fetchProfile = async () => {
 
 const handleChangePassword = async () => {
   if (!newPassword.value || !confirmPassword.value) {
-    toast.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir les champs de mot de passe.', life: 3000 })
+    toast.warning(`Champs requis\nVeuillez remplir les champs de mot de passe.`, { autoClose: 3000 })
     return
   }
 
   if (newPassword.value !== confirmPassword.value) {
-    toast.add({ severity: 'error', summary: 'Erreur de saisie', detail: 'Les mots de passe ne correspondent pas.', life: 3000 })
+    toast.error(`Erreur de saisie\nLes mots de passe ne correspondent pas.`, { autoClose: 3000 })
     return
   }
 
   if (newPassword.value.length < 6) {
-    toast.add({ severity: 'warn', summary: 'Sécurité faible', detail: 'Le mot de passe doit contenir au moins 6 caractères.', life: 3000 })
+    toast.warning(`Sécurité faible\nLe mot de passe doit contenir au moins 6 caractères.`, { autoClose: 3000 })
     return
   }
 
@@ -92,23 +92,13 @@ const handleChangePassword = async () => {
     const res = await api.put(url, payload)
     console.log(`[API Response] PUT ${url} (Password Update) | Status: ${res.status}`)
     
-    toast.add({
-      severity: 'success',
-      summary: 'Mot de passe mis à jour',
-      detail: 'Votre mot de passe a été modifié avec succès.',
-      life: 3000
-    })
+    toast.success(`Mot de passe mis à jour\nVotre mot de passe a été modifié avec succès.`, { autoClose: 3000 })
 
     newPassword.value = ''
     confirmPassword.value = ''
   } catch (error) {
     console.error("[API Error] Password update failed:", error)
-    toast.add({
-      severity: 'error',
-      summary: 'Échec de la modification',
-      detail: error.response?.data?.error || 'Impossible de changer le mot de passe.',
-      life: 4000
-    })
+    toast.error(`Échec de la modification\n${error.response?.data?.error || 'Impossible de changer le mot de passe.'}`, { autoClose: 4000 })
   } finally {
     savingPassword.value = false
   }
@@ -120,12 +110,7 @@ const handleSavePreferences = () => {
   localStorage.setItem('denti_notif_email', emailNotifications.value.toString())
   localStorage.setItem('denti_notif_sound', soundAlerts.value.toString())
   
-  toast.add({
-    severity: 'success',
-    summary: 'Préférences enregistrées',
-    detail: 'Vos options de l\'espace clinique ont été stockées localement.',
-    life: 3000
-  })
+  toast.success(`Préférences enregistrées\nVos options de l'espace clinique ont été stockées localement.`, { autoClose: 3000 })
 }
 
 onMounted(() => {

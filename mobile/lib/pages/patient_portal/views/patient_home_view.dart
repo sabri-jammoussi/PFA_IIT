@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
+import 'package:dentiflow/screens/home_screen.dart';
 import '../models/patient_portal_model.dart';
 import '../viewmodels/patient_portal_viewmodel.dart';
 import 'patient_book_view.dart';
@@ -18,11 +19,9 @@ class PatientHomeView extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Mon espace santé'),
-          leading: Builder(
-            builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu_rounded),
-              onPressed: () => Scaffold.of(ctx).openDrawer(),
-            ),
+          leading: IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            onPressed: () => HomeScreen.scaffoldKey.currentState?.openDrawer(),
           ),
         ),
         body: Obx(() {

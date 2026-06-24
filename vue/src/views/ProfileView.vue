@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import UserProfilePicture from '@/components/UserProfilePicture.vue'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const loading = ref(false)
 const saving = ref(false)
@@ -77,20 +77,10 @@ const handleSaveProfile = async () => {
     }
     authStore.user = updatedUser
 
-    toast.add({
-      severity: 'success',
-      summary: 'Profil mis à jour',
-      detail: 'Vos modifications ont été enregistrées avec succès.',
-      life: 3000
-    })
+    toast.success(`Profil mis à jour\nVos modifications ont été enregistrées avec succès.`, { autoClose: 3000 })
   } catch (error) {
     console.error("[API Error] handleSaveProfile failed:", error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: error.response?.data?.error || 'Impossible de mettre à jour le profil.',
-      life: 4000
-    })
+    toast.error(`Erreur\n${error.response?.data?.error || 'Impossible de mettre à jour le profil.'}`, { autoClose: 4000 })
   } finally {
     saving.value = false
   }

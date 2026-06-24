@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
 const router = useRouter()
-const toast = useToast()
+
 
 const step = ref(1) // Steps: 1 = Clinic Details, 2 = Doctor Details, 3 = Success
 const loading = ref(false)
@@ -57,23 +57,13 @@ const handleRegister = async () => {
     
     await api.post('/saas/register', payload)
     
-    toast.add({
-      severity: 'success',
-      summary: 'Inscription réussie',
-      detail: 'Votre cabinet a été créé avec succès.',
-      life: 5000
-    })
+    toast.success(`Inscription réussie\nVotre cabinet a été créé avec succès.`, { autoClose: 5000 })
     
     step.value = 3
   } catch (error) {
     console.error('[API Error] Clinic registration failed:', error)
     errorMessage.value = error.response?.data?.error || "Une erreur s'est produite lors de l'enregistrement de votre cabinet."
-    toast.add({
-      severity: 'error',
-      summary: 'Échec de l\'inscription',
-      detail: errorMessage.value,
-      life: 5000
-    })
+    toast.error(`Échec de l'inscription\n${errorMessage.value}`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }

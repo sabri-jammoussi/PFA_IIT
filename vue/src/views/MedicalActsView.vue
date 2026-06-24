@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import MedicalActDialog from './MedicalActDialog.vue'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const loading = ref(false)
 const saving = ref(false)
@@ -34,12 +34,7 @@ const fetchActs = async () => {
     acts.value = res.data?.items || res.data || []
   } catch (error) {
     console.error('[API Error] fetchActs failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de récupérer le catalogue des actes médicaux.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de récupérer le catalogue des actes médicaux.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -74,23 +69,18 @@ const handleSave = async (formData) => {
       console.log(`[API Request] PUT /actes-medicaux/${formData.id}`, payload)
       const res = await api.put(`/actes-medicaux/${formData.id}`, { id: formData.id, ...payload })
       console.log(`[API Response] PUT /actes-medicaux/${formData.id} | Status: ${res.status}`)
-      toast.add({ severity: 'success', summary: 'Acte mis à jour', detail: "L'acte médical a été modifié.", life: 3000 })
+      toast.success(`Acte mis à jour\nL'acte médical a été modifié.`, { autoClose: 3000 })
     } else {
       console.log('[API Request] POST /actes-medicaux', payload)
       const res = await api.post('/actes-medicaux', payload)
       console.log(`[API Response] POST /actes-medicaux | Status: ${res.status}`, res.data)
-      toast.add({ severity: 'success', summary: 'Acte créé', detail: "Le nouvel acte a été ajouté au catalogue.", life: 3000 })
+      toast.success(`Acte créé\nLe nouvel acte a été ajouté au catalogue.`, { autoClose: 3000 })
     }
     closeDialog()
     fetchActs()
   } catch (error) {
     console.error('[API Error] save act failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de sauvegarde',
-      detail: isEdit ? "Impossible de modifier l'acte médical." : "Impossible de créer le nouvel acte médical.",
-      life: 5000
-    })
+    toast.error(`Erreur de sauvegarde\n${isEdit ? "Impossible de modifier l'acte médical." : "Impossible de créer le nouvel acte médical."}`, { autoClose: 5000 })
   } finally {
     saving.value = false
   }
@@ -110,16 +100,11 @@ const confirmDelete = async () => {
     console.log(`[API Request] DELETE /actes-medicaux/${id}`)
     const res = await api.delete(`/actes-medicaux/${id}`)
     console.log(`[API Response] DELETE /actes-medicaux/${id} | Status: ${res.status}`)
-    toast.add({ severity: 'success', summary: 'Acte supprimé', detail: "L'acte a été retiré du catalogue.", life: 3000 })
+    toast.success(`Acte supprimé\nL'acte a été retiré du catalogue.`, { autoClose: 3000 })
     fetchActs()
   } catch (error) {
     console.error('[API Error] delete act failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de suppression',
-      detail: "Impossible de supprimer l'acte médical.",
-      life: 5000
-    })
+    toast.error(`Erreur de suppression\nImpossible de supprimer l'acte médical.`, { autoClose: 5000 })
   } finally {
     actIdToDelete.value = null
   }

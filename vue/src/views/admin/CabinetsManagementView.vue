@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const loading = ref(false)
 const processing = ref(null) // ID of cabinet currently being processed
 const cabinets = ref([])
@@ -16,12 +16,7 @@ const fetchCabinets = async () => {
     cabinets.value = res.data || []
   } catch (error) {
     console.error("Failed to load cabinets list:", error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger la liste des cabinets clients.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger la liste des cabinets clients.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -36,20 +31,10 @@ const toggleSubscription = async (cabinet) => {
     await api.put(`/cabinet/${cabinet.id}/subscription`, { isActive: targetStatus })
     
     cabinet.isSubscriptionActive = targetStatus
-    toast.add({
-      severity: 'success',
-      summary: targetStatus ? 'Licence activée' : 'Licence suspendue',
-      detail: `La souscription de ${cabinet.nomCabinet} a été mise à jour.`,
-      life: 3000
-    })
+    toast.success(`${targetStatus ? 'Licence activée' : 'Licence suspendue'}\nLa souscription de ${cabinet.nomCabinet} a été mise à jour.`, { autoClose: 3000 })
   } catch (error) {
     console.error("Failed to update subscription status:", error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de mise à jour',
-      detail: 'Impossible de modifier la licence du cabinet.',
-      life: 4000
-    })
+    toast.error(`Erreur de mise à jour\nImpossible de modifier la licence du cabinet.`, { autoClose: 4000 })
   } finally {
     processing.value = null
   }

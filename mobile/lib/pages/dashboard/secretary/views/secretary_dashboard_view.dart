@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dentiflow/core/df_ui.dart';
+import 'package:dentiflow/screens/home_screen.dart';
 import '../viewmodels/secretary_dashboard_viewmodel.dart';
 
 class SecretaryDashboardView extends StatelessWidget {
@@ -15,11 +16,9 @@ class SecretaryDashboardView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tableau de bord'),
-        leading: Builder(
-          builder: (ctx) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            onPressed: () => Scaffold.of(ctx).openDrawer(),
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          onPressed: () => HomeScreen.scaffoldKey.currentState?.openDrawer(),
         ),
       ),
       body: Obx(() {

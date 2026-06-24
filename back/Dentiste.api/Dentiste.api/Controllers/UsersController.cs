@@ -74,7 +74,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Dentiste)},{nameof(UserRole.Secretaire)}")]
+    [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Dentiste)},{nameof(UserRole.Secretaire)},{nameof(UserRole.Patient)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;

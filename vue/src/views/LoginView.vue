@@ -1,6 +1,6 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
@@ -8,7 +8,7 @@ import api from '@/services/api'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const username = ref('')
 const password = ref('')
@@ -22,12 +22,7 @@ const requestError = ref('')
 const handleLogin = async () => {
   if (!username.value || !password.value) {
     loginError.value = "Veuillez remplir tous les champs."
-    toast.add({
-      severity: 'warn',
-      summary: 'Champs requis',
-      detail: 'Le nom d\'utilisateur et le mot de passe sont obligatoires.',
-      life: 3000
-    })
+    toast.warning(`Champs requis\nLe nom d'utilisateur et le mot de passe sont obligatoires.`, { autoClose: 3000 })
     return
   }
 
@@ -36,12 +31,7 @@ const handleLogin = async () => {
   const result = await authStore.login(username.value, password.value)
   
   if (result.success) {
-    toast.add({
-      severity: 'success',
-      summary: 'Connexion réussie',
-      detail: `Bienvenue, ${authStore.fullName}`,
-      life: 3000
-    })
+    toast.success(`Connexion réussie\nBienvenue, ${authStore.fullName}`, { autoClose: 3000 })
     
     // Redirect to the path they tried to access, or dashboard.
     // Only allow internal relative paths to prevent open-redirect attacks
@@ -55,24 +45,14 @@ const handleLogin = async () => {
     router.push(isSafeInternalPath ? requested : '/')
   } else {
     loginError.value = result.error
-    toast.add({
-      severity: 'error',
-      summary: 'Échec de connexion',
-      detail: result.error,
-      life: 4000
-    })
+    toast.error(`Échec de connexion\n${result.error}`, { autoClose: 4000 })
   }
 }
 
 const handleForgetPassword = async () => {
   if (!matricule.value) {
     requestError.value = "Veuillez saisir votre adresse email ou matricule."
-    toast.add({
-      severity: 'warn',
-      summary: 'Champ requis',
-      detail: 'L\'adresse email ou matricule est obligatoire.',
-      life: 3000
-    })
+    toast.warning(`Champ requis\nL'adresse email ou matricule est obligatoire.`, { autoClose: 3000 })
     return
   }
 
@@ -86,12 +66,7 @@ const handleForgetPassword = async () => {
     }
     await api.post('/auth/forget-password', payload)
     
-    toast.add({
-      severity: 'success',
-      summary: 'Demande envoyée',
-      detail: `Si un compte est associé à ce matricule, un email a été envoyé.`,
-      life: 4000
-    })
+    toast.success(`Demande envoyée\nSi un compte est associé à ce matricule, un email a été envoyé.`, { autoClose: 4000 })
     
     setTimeout(() => {
         isReset.value = false
@@ -100,12 +75,7 @@ const handleForgetPassword = async () => {
   } catch (error) {
     console.error('Erreur lors de la récupération du compte:', error)
     requestError.value = "Une erreur est survenue lors de l'envoi de l'email."
-    toast.add({
-      severity: 'error',
-      summary: 'Échec de la demande',
-      detail: requestError.value,
-      life: 4000
-    })
+    toast.error(`Échec de la demande\n${requestError.value}`, { autoClose: 4000 })
   } finally {
     loadingReset.value = false
   }

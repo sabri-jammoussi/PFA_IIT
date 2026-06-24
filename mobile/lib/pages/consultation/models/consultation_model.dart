@@ -112,6 +112,86 @@ class Treatment {
       };
 }
 
+/// A patient checked in by the secretary and waiting for the doctor.
+class WaitingEntry {
+  final int appointmentId;
+  final int patientId;
+  final String patientNomComplet;
+  final String? motif;
+  final String? arrivalTime;
+  final String? lastVisitDate;
+
+  WaitingEntry({
+    required this.appointmentId,
+    required this.patientId,
+    required this.patientNomComplet,
+    this.motif,
+    this.arrivalTime,
+    this.lastVisitDate,
+  });
+
+  factory WaitingEntry.fromJson(Map<String, dynamic> j) => WaitingEntry(
+        appointmentId: (j['appointmentId'] ?? 0) as int,
+        patientId: (j['patientId'] ?? 0) as int,
+        patientNomComplet: (j['patientNomComplet'] ?? '') as String,
+        motif: j['motif'] as String?,
+        arrivalTime: j['arrivalTime'] as String?,
+        lastVisitDate: j['lastVisitDate'] as String?,
+      );
+}
+
+/// A stock article consumed during the consultation (decrements inventory only).
+class ConsommationArticle {
+  final int id;
+  final int quantite;
+  final int consultationId;
+  final int articleId;
+  final String? articleNom;
+  final String? articleUnite;
+
+  ConsommationArticle({
+    required this.id,
+    required this.quantite,
+    required this.consultationId,
+    required this.articleId,
+    this.articleNom,
+    this.articleUnite,
+  });
+
+  factory ConsommationArticle.fromJson(Map<String, dynamic> j) =>
+      ConsommationArticle(
+        id: (j['id'] ?? 0) as int,
+        quantite: (j['quantite'] ?? 0) as int,
+        consultationId: (j['consultationId'] ?? 0) as int,
+        articleId: (j['articleId'] ?? 0) as int,
+        articleNom: j['articleNom'] as String?,
+        articleUnite: j['articleUnite'] as String?,
+      );
+}
+
+/// Suggested consumable from a medical act's "recipe" (editable pre-fill).
+class RecetteSuggestion {
+  final int id;
+  final int articleId;
+  final String? articleNom;
+  final int quantiteRequise;
+
+  RecetteSuggestion({
+    required this.id,
+    required this.articleId,
+    required this.quantiteRequise,
+    this.articleNom,
+  });
+
+  factory RecetteSuggestion.fromJson(Map<String, dynamic> j) =>
+      RecetteSuggestion(
+        id: (j['id'] ?? 0) as int,
+        articleId: (j['articleId'] ?? 0) as int,
+        quantiteRequise: (j['quantiteRequise'] ?? 1) as int,
+        articleNom: (j['articleNom'] ?? j['articleLibelle']) as String?,
+      );
+}
+
 class Prescription {
   final int id;
   final int consultationId;

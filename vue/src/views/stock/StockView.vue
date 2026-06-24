@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import StockDialog from './StockDialog.vue'
 import RestockDialog from './RestockDialog.vue'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const loading = ref(false)
 const saving = ref(false)
@@ -49,7 +49,7 @@ const fetchArticles = async () => {
     articles.value = res.data?.items || res.data || []
   } catch (error) {
     console.error("[API Error] fetchArticles failed:", error)
-    toast.add({ severity: 'error', summary: 'Erreur de chargement', detail: 'Impossible de charger la liste des articles.', life: 3000 })
+    toast.error(`Erreur de chargement\nImpossible de charger la liste des articles.`, { autoClose: 3000 })
   } finally {
     loading.value = false
   }
@@ -96,18 +96,18 @@ const handleSave = async (formData) => {
       console.log(`[API Request] PUT /articles/${formData.id}`, payload)
       const res = await api.put(`/articles/${formData.id}`, { id: formData.id, ...payload })
       console.log(`[API Response] PUT /articles/${formData.id} | Status: ${res.status}`)
-      toast.add({ severity: 'success', summary: 'Article mis à jour', detail: "Les informations de l'article ont été modifiées.", life: 3000 })
+      toast.success(`Article mis à jour\nLes informations de l'article ont été modifiées.`, { autoClose: 3000 })
     } else {
       console.log('[API Request] POST /articles', payload)
       const res = await api.post('/articles', payload)
       console.log(`[API Response] POST /articles | Status: ${res.status}`, res.data)
-      toast.add({ severity: 'success', summary: 'Article créé', detail: "Le nouvel article a été ajouté au catalogue de stock.", life: 3000 })
+      toast.success(`Article créé\nLe nouvel article a été ajouté au catalogue de stock.`, { autoClose: 3000 })
     }
     closeDialog()
     fetchArticles()
   } catch (error) {
     console.error("[API Error] save article failed:", error)
-    toast.add({ severity: 'error', summary: 'Erreur d\'enregistrement', detail: 'Impossible d\'enregistrer les modifications.', life: 3000 })
+    toast.error(`Erreur d'enregistrement\nImpossible d'enregistrer les modifications.`, { autoClose: 3000 })
   } finally {
     saving.value = false
   }
@@ -119,12 +119,12 @@ const handleRestock = async ({ id, quantiteAjoutee }) => {
     console.log(`[API Request] PATCH /articles/${id}/restock`, { id, quantiteAjoutee })
     const res = await api.patch(`/articles/${id}/restock`, { id, quantiteAjoutee })
     console.log(`[API Response] PATCH /articles/${id}/restock | Status: ${res.status}`)
-    toast.add({ severity: 'success', summary: 'Stock mis à jour', detail: `+${quantiteAjoutee} unités ajoutées au stock.`, life: 3000 })
+    toast.success(`Stock mis à jour\n+${quantiteAjoutee} unités ajoutées au stock.`, { autoClose: 3000 })
     closeRestockDialog()
     fetchArticles()
   } catch (error) {
     console.error("[API Error] restock failed:", error)
-    toast.add({ severity: 'error', summary: 'Erreur de ravitaillement', detail: 'Impossible de mettre à jour la quantité en stock.', life: 3000 })
+    toast.error(`Erreur de ravitaillement\nImpossible de mettre à jour la quantité en stock.`, { autoClose: 3000 })
   } finally {
     saving.value = false
   }
@@ -144,11 +144,11 @@ const confirmDelete = async () => {
     console.log(`[API Request] DELETE /articles/${id}`)
     const res = await api.delete(`/articles/${id}`)
     console.log(`[API Response] DELETE /articles/${id} | Status: ${res.status}`)
-    toast.add({ severity: 'success', summary: 'Article supprimé', detail: "L'article a été retiré du stock.", life: 3000 })
+    toast.success(`Article supprimé\nL'article a été retiré du stock.`, { autoClose: 3000 })
     fetchArticles()
   } catch (error) {
     console.error("[API Error] delete article failed:", error)
-    toast.add({ severity: 'error', summary: 'Erreur de suppression', detail: 'Impossible de supprimer l\'article.', life: 3000 })
+    toast.error(`Erreur de suppression\nImpossible de supprimer l'article.`, { autoClose: 3000 })
   } finally {
     articleIdToDelete.value = null
   }

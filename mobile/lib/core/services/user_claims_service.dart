@@ -60,7 +60,8 @@ class UserClaimsService {
     final String prenom = _str(payload, ['given_name', 'givenName', 'prenom', 'firstName']);
     final String cabinetId = _str(payload, ['cabinetId', 'cabinet_id', 'societeId']);
     final String cabinetName = _str(payload, ['cabinetName', 'cabinet_name', 'cabinetname']);
-    final UserRole role = UserRoleX.fromTokenValue(payload['role']);
+    final dynamic rawRole = payload['role'] ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    final UserRole role = UserRoleX.fromTokenValue(rawRole);
 
     final String displayName = [prenom, nom]
         .where((s) => s.trim().isNotEmpty)

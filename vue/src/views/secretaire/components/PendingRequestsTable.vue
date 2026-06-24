@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const loading = ref(false)
 const requests = ref([])
 const dentists = ref([])
@@ -34,12 +34,7 @@ const fetchPendingRequests = async () => {
     requests.value = res.data || []
   } catch (error) {
     console.error('[API Error] fetchPendingRequests failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les demandes en attente.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger les demandes en attente.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -83,22 +78,12 @@ const handleAccept = async () => {
     }
 
     await api.put(`/rendezvous/${selectedRdv.value.id}`, payload)
-    toast.add({
-      severity: 'success',
-      summary: 'Rendez-vous planifié',
-      detail: `La demande a été acceptée et planifiée avec succès.`,
-      life: 3000
-    })
+    toast.success(`Rendez-vous planifié\nLa demande a été acceptée et planifiée avec succès.`, { autoClose: 3000 })
     closeAcceptModal()
     fetchPendingRequests()
   } catch (error) {
     console.error('[API Error] handleAccept failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible d'enregistrer la planification.",
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible d'enregistrer la planification.`, { autoClose: 5000 })
   } finally {
     validating.value = false
   }
@@ -121,21 +106,11 @@ const handleReject = async (rdv) => {
       dentisteId: rdv.dentisteId
     }
     await api.put(`/rendezvous/${rdv.id}`, payload)
-    toast.add({
-      severity: 'info',
-      summary: 'Demande rejetée',
-      detail: 'La demande de rendez-vous a été annulée.',
-      life: 3000
-    })
+    toast.info(`Demande rejetée\nLa demande de rendez-vous a été annulée.`, { autoClose: 3000 })
     fetchPendingRequests()
   } catch (error) {
     console.error('[API Error] handleReject failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de rejeter la demande.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de rejeter la demande.`, { autoClose: 5000 })
   }
 }
 

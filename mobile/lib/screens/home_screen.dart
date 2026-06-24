@@ -34,6 +34,8 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({this.initialIndex = 0, super.key});
   final int initialIndex;
 
+  static final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -42,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   double _page = 0;
   UserRole _role = UserRole.unknown;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -68,9 +71,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadRole() async {
-    final claims = await UserClaimsService.currentUser();
-    if (!mounted) return;
-    setState(() => _role = claims.role);
+    try {
+      final claims = await UserClaimsService.currentUser();
+      if (!mounted) return;
+      setState(() {
+        _role = claims.role;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -160,10 +173,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     final Color accent = DfColors.brandPrimary(context);
     final List<GlassTabItem> tabs = _tabItems;
 
     return Scaffold(
+      key: HomeScreen.scaffoldKey,
       extendBody: true,
       drawer: const DfDrawer(),
       body: PageView(

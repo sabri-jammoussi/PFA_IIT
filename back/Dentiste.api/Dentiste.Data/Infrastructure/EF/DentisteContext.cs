@@ -72,6 +72,7 @@ public class DentisteContext : DbContext
     // Stock & Inventaire
     public DbSet<ArticleDao> Articles { get; set; }
     public DbSet<RecetteActeDao> RecettesActes { get; set; }
+    public DbSet<ConsommationArticleDao> ConsommationsArticles { get; set; }
 
     // Notifications
     public DbSet<NotificationDao> Notifications { get; set; }
@@ -102,6 +103,7 @@ public class DentisteContext : DbContext
         modelBuilder.Entity<PaiementDao>().HasQueryFilter(p => _tenantProvider != null && p.CabinetId == _tenantProvider.GetCabinetId());
         modelBuilder.Entity<ArticleDao>().HasQueryFilter(a => _tenantProvider != null && a.CabinetId == _tenantProvider.GetCabinetId());
         modelBuilder.Entity<RecetteActeDao>().HasQueryFilter(r => _tenantProvider != null && r.CabinetId == _tenantProvider.GetCabinetId());
+        modelBuilder.Entity<ConsommationArticleDao>().HasQueryFilter(c => _tenantProvider != null && c.CabinetId == _tenantProvider.GetCabinetId());
         modelBuilder.Entity<NotificationDao>().HasQueryFilter(n => _tenantProvider != null && n.CabinetId == _tenantProvider.GetCabinetId());
         modelBuilder.Entity<AuditLogDao>().HasQueryFilter(a => _tenantProvider != null && a.CabinetId == _tenantProvider.GetCabinetId());
         modelBuilder.Entity<ConfigurationCabinetDao>().HasQueryFilter(c => _tenantProvider != null && c.CabinetId == _tenantProvider.GetCabinetId());
@@ -118,6 +120,7 @@ public class DentisteContext : DbContext
         modelBuilder.Entity<PaiementDao>().HasOne(p => p.Cabinet).WithMany().HasForeignKey(p => p.CabinetId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<ArticleDao>().HasOne(a => a.Cabinet).WithMany().HasForeignKey(a => a.CabinetId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<RecetteActeDao>().HasOne(r => r.Cabinet).WithMany().HasForeignKey(r => r.CabinetId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ConsommationArticleDao>().HasOne(c => c.Cabinet).WithMany().HasForeignKey(c => c.CabinetId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<NotificationDao>().HasOne(n => n.Cabinet).WithMany().HasForeignKey(n => n.CabinetId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<AuditLogDao>().HasOne(a => a.Cabinet).WithMany().HasForeignKey(a => a.CabinetId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<ConfigurationCabinetDao>().HasOne(c => c.Cabinet).WithOne().HasForeignKey<ConfigurationCabinetDao>(c => c.CabinetId).OnDelete(DeleteBehavior.Cascade);
@@ -196,6 +199,11 @@ public class DentisteContext : DbContext
                   .WithMany(p => p.Factures)
                   .HasForeignKey(f => f.PatientId)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(f => f.Consultation)
+                  .WithMany()
+                  .HasForeignKey(f => f.ConsultationId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ── Paiement ──
@@ -219,6 +227,20 @@ public class DentisteContext : DbContext
                   .WithMany()
                   .HasForeignKey(r => r.ArticleId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── ConsommationArticle ──
+        modelBuilder.Entity<ConsommationArticleDao>(entity =>
+        {
+            entity.HasOne(c => c.Consultation)
+                  .WithMany()
+                  .HasForeignKey(c => c.ConsultationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.Article)
+                  .WithMany()
+                  .HasForeignKey(c => c.ArticleId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ── AuditLog ──

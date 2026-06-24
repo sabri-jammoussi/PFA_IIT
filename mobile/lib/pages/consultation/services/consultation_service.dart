@@ -52,4 +52,47 @@ class ConsultationService {
   static Future<void> addPrescription(Prescription p) async {
     await ApiService.post('/ordonnances', body: p.toJson());
   }
+
+  // ── Waiting room (patients checked-in for this doctor) ──
+  static Future<List<WaitingEntry>> getWaitingRoom(int dentisteId) async {
+    final dynamic data =
+        await ApiService.get('/rendezvous/waiting-room?dentisteId=$dentisteId');
+    return _items(data).map(WaitingEntry.fromJson).toList();
+  }
+
+  // ── Manual stock consumption ──
+  static Future<List<ConsommationArticle>> getConsommations(int consultationId) async {
+    final dynamic data =
+        await ApiService.get('/consommations?consultationId=$consultationId');
+    return _items(data).map(ConsommationArticle.fromJson).toList();
+  }
+
+  static Future<void> addConsommation({
+    required int consultationId,
+    required int articleId,
+    required int quantite,
+  }) async {
+    await ApiService.post('/consommations', body: {
+      'consultationId': consultationId,
+      'articleId': articleId,
+      'quantite': quantite,
+    });
+  }
+
+  static Future<void> deleteConsommation(int id) async {
+    await ApiService.delete('/consommations/$id');
+  }
+
+  static Future<List<RecetteSuggestion>> getRecette(int acteMedicalId) async {
+    final dynamic data = await ApiService.get('/recettes-actes/$acteMedicalId');
+    return _items(data).map(RecetteSuggestion.fromJson).toList();
+  }
+
+  // ── Finalize: one invoice = sum of the visit's treatments ──
+  /// Returns the created invoice payload ({ numeroFacture, montantTotal, ... }).
+  static Future<Map<String, dynamic>> finalizeConsultation(int consultationId) async {
+    final dynamic data =
+        await ApiService.post('/consultations/$consultationId/finalize');
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
 }

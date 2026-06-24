@@ -246,6 +246,46 @@ namespace Dentiste.Data.Migrations
                     b.ToTable("CONFIGURATION_CABINET");
                 });
 
+            modelBuilder.Entity("Dentiste.Data.Models.ConsommationArticleDao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("CSM_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("int")
+                        .HasColumnName("CSM_ARTICLE_ID");
+
+                    b.Property<int>("CabinetId")
+                        .HasColumnType("int")
+                        .HasColumnName("CSM_CABINET_ID");
+
+                    b.Property<int>("ConsultationId")
+                        .HasColumnType("int")
+                        .HasColumnName("CSM_CONSULTATION_ID");
+
+                    b.Property<DateTime>("DateConsommation")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CSM_DATE");
+
+                    b.Property<int>("Quantite")
+                        .HasColumnType("int")
+                        .HasColumnName("CSM_QUANTITE");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArticleId");
+
+                    b.HasIndex("CabinetId");
+
+                    b.HasIndex("ConsultationId");
+
+                    b.ToTable("CONSOMMATION_ARTICLE");
+                });
+
             modelBuilder.Entity("Dentiste.Data.Models.ConsultationDao", b =>
                 {
                     b.Property<int>("Id")
@@ -299,6 +339,10 @@ namespace Dentiste.Data.Migrations
                         .HasColumnType("int")
                         .HasColumnName("FAC_CABINET_ID");
 
+                    b.Property<int?>("ConsultationId")
+                        .HasColumnType("int")
+                        .HasColumnName("FAC_CONSULTATION_ID");
+
                     b.Property<DateTime>("DateEmission")
                         .HasColumnType("datetime2")
                         .HasColumnName("FAC_DATE_EMISSION");
@@ -330,6 +374,8 @@ namespace Dentiste.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CabinetId");
+
+                    b.HasIndex("ConsultationId");
 
                     b.HasIndex("NumeroFacture")
                         .IsUnique();
@@ -1050,6 +1096,33 @@ namespace Dentiste.Data.Migrations
                     b.Navigation("Cabinet");
                 });
 
+            modelBuilder.Entity("Dentiste.Data.Models.ConsommationArticleDao", b =>
+                {
+                    b.HasOne("Dentiste.Data.Models.ArticleDao", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
+                        .WithMany()
+                        .HasForeignKey("CabinetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Dentiste.Data.Models.ConsultationDao", "Consultation")
+                        .WithMany()
+                        .HasForeignKey("ConsultationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Article");
+
+                    b.Navigation("Cabinet");
+
+                    b.Navigation("Consultation");
+                });
+
             modelBuilder.Entity("Dentiste.Data.Models.ConsultationDao", b =>
                 {
                     b.HasOne("Dentiste.Data.Models.CabinetDao", "Cabinet")
@@ -1085,6 +1158,11 @@ namespace Dentiste.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Dentiste.Data.Models.ConsultationDao", "Consultation")
+                        .WithMany()
+                        .HasForeignKey("ConsultationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Dentiste.Data.Models.PatientDao", "Patient")
                         .WithMany("Factures")
                         .HasForeignKey("PatientId")
@@ -1092,6 +1170,8 @@ namespace Dentiste.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Cabinet");
+
+                    b.Navigation("Consultation");
 
                     b.Navigation("Patient");
                 });

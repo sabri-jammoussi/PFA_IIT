@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const isOpen = ref(false)
 const loading = ref(false)
 const users = ref([])
@@ -31,12 +31,7 @@ const fetchUsers = async () => {
     }
   } catch (error) {
     console.error('[API Error] fetchUsers failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger la liste des utilisateurs.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger la liste des utilisateurs.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }

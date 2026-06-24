@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import signalRService from '@/services/signalrService'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const loadingPatients = ref(false)
 const loadingProfile = ref(false)
@@ -34,6 +34,21 @@ const newSoinForm = ref({
 
 const notesCliniques = ref('')
 const prescriptionText = ref('')
+
+// Stock consumption (manual) + invoicing
+const articles = ref([])
+const consommations = ref([])
+const recetteSuggestions = ref([])
+const savingConsommation = ref(false)
+const finalizing = ref(false)
+const newConsommationForm = ref({
+  articleId: null,
+  quantite: 1
+})
+
+// Waiting room (patients checked-in by the secretary for this doctor)
+const waitingRoom = ref([])
+const loadingWaiting = ref(false)
 
 // Teeth quadrants (32 teeth FDI)
 const upperRightTeeth = [18, 17, 16, 15, 14, 13, 12, 11]
@@ -75,6 +90,23 @@ const selectedToothTreatments = computed(() => {
   return soinsEffectues.value.filter(s => s.numeroDent === selectedTooth.value)
 })
 
+// The consultation currently being worked on (most recent for the patient).
+const activeConsultationId = computed(() => consultations.value?.[0]?.id || null)
+
+const articleOptions = computed(() => {
+  return articles.value.map(a => ({
+    id: a.id,
+    label: `${a.nom} — stock: ${a.quantiteEnStock} ${a.unite || ''}`.trim()
+  }))
+})
+
+// Total of the visit's treatments = amount the secretary will collect.
+const consultationTotal = computed(() => {
+  return soinsEffectues.value
+    .filter(s => activeConsultationId.value && s.consultationId === activeConsultationId.value)
+    .reduce((sum, s) => sum + (Number(s.prixApplique) || 0), 0)
+})
+
 const fetchPatients = async () => {
   loadingPatients.value = true
   try {
@@ -83,7 +115,7 @@ const fetchPatients = async () => {
     patients.value = res.data?.items || res.data || []
   } catch (error) {
     console.error("Failed to load patients list", error)
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de récupérer la liste des patients.', life: 4000 })
+    toast.error(`Erreur\nImpossible de récupérer la liste des patients.`, { autoClose: 4000 })
   } finally {
     loadingPatients.value = false
   }
@@ -119,28 +151,169 @@ const fetchPatientClinicalData = async (patientId) => {
     // 5. Ordonnances
     const ordRes = await api.get('/ordonnances', { params: { patientId, pageSize: 50 } })
     ordonnances.value = ordRes.data?.items || ordRes.data || []
+
+    // 6. Articles consumed during the active consultation
+    newConsommationForm.value = { articleId: null, quantite: 1 }
+    recetteSuggestions.value = []
+    await fetchConsommations(consultations.value?.[0]?.id || null)
   } catch (error) {
     console.error("Failed to fetch clinical records", error)
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger le dossier clinique.', life: 5000 })
+    toast.error(`Erreur\nImpossible de charger le dossier clinique.`, { autoClose: 5000 })
   } finally {
     loadingProfile.value = false
   }
 }
 
-const onActeSelect = () => {
+const fetchArticles = async () => {
+  try {
+    const res = await api.get('/articles', { params: { pageSize: 200 } })
+    articles.value = res.data?.items || res.data || []
+  } catch (error) {
+    console.error('Failed to load articles', error)
+  }
+}
+
+const fetchConsommations = async (consultationId) => {
+  if (!consultationId) {
+    consommations.value = []
+    return
+  }
+  try {
+    const res = await api.get('/consommations', { params: { consultationId } })
+    consommations.value = res.data || []
+  } catch (error) {
+    console.error('Failed to load consommations', error)
+    consommations.value = []
+  }
+}
+
+const fetchWaitingRoom = async () => {
+  loadingWaiting.value = true
+  try {
+    const res = await api.get('/rendezvous/waiting-room', {
+      params: { dentisteId: authStore.user?.id }
+    })
+    waitingRoom.value = res.data || []
+  } catch (error) {
+    console.error('Failed to load waiting room', error)
+  } finally {
+    loadingWaiting.value = false
+  }
+}
+
+// Make sure a consultation exists for the active patient (created lazily, like the soin flow).
+const ensureConsultation = async () => {
+  if (activeConsultationId.value) return activeConsultationId.value
+  const payload = {
+    dateConsultation: new Date().toISOString(),
+    notesObservations: 'Séance de soins',
+    patientId: selectedPatientId.value,
+    dentisteId: authStore.user?.id || 1
+  }
+  const consRes = await api.post('/consultations', payload)
+  const newId = consRes.data?.id || consRes.data
+  // Refresh so activeConsultationId picks it up.
+  await fetchPatientClinicalData(selectedPatientId.value)
+  return newId
+}
+
+const onActeSelect = async () => {
   const selected = medicalActs.value.find(a => a.id === newSoinForm.value.acteMedicalId)
   if (selected) {
     newSoinForm.value.prixApplique = selected.tarifDeBase
   }
+  // Pre-fill editable stock suggestions from the act's "recipe".
+  recetteSuggestions.value = []
+  if (newSoinForm.value.acteMedicalId) {
+    try {
+      const res = await api.get(`/recettes-actes/${newSoinForm.value.acteMedicalId}`)
+      recetteSuggestions.value = res.data || []
+    } catch (error) {
+      console.error('Failed to load recette suggestions', error)
+    }
+  }
+}
+
+const useSuggestion = (suggestion) => {
+  newConsommationForm.value.articleId = suggestion.articleId
+  newConsommationForm.value.quantite = suggestion.quantiteRequise || 1
+}
+
+const handleAddConsommation = async () => {
+  if (!newConsommationForm.value.articleId) {
+    toast.warning(`Article requis\nSélectionnez l'article consommé.`, { autoClose: 3000 })
+    return
+  }
+  if (!newConsommationForm.value.quantite || newConsommationForm.value.quantite <= 0) {
+    toast.warning(`Quantité invalide\nLa quantité doit être supérieure à 0.`, { autoClose: 3000 })
+    return
+  }
+
+  savingConsommation.value = true
+  try {
+    const consultationId = await ensureConsultation()
+    await api.post('/consommations', {
+      consultationId,
+      articleId: newConsommationForm.value.articleId,
+      quantite: newConsommationForm.value.quantite
+    })
+    toast.success(`Consommation enregistrée\nLe stock a été décrémenté.`, { autoClose: 2500 })
+    newConsommationForm.value = { articleId: null, quantite: 1 }
+    await Promise.all([fetchConsommations(consultationId), fetchArticles()])
+  } catch (error) {
+    console.error('Failed to save consommation', error)
+    toast.error(`Erreur\nImpossible d'enregistrer la consommation.`, { autoClose: 4000 })
+  } finally {
+    savingConsommation.value = false
+  }
+}
+
+const handleDeleteConsommation = async (consommation) => {
+  try {
+    await api.delete(`/consommations/${consommation.id}`)
+    toast.info(`Consommation annulée\nLa quantité a été remise en stock.`, { autoClose: 2500 })
+    await Promise.all([fetchConsommations(activeConsultationId.value), fetchArticles()])
+  } catch (error) {
+    console.error('Failed to delete consommation', error)
+    toast.error(`Erreur\nImpossible d'annuler la consommation.`, { autoClose: 4000 })
+  }
+}
+
+const handleFinalize = async () => {
+  if (!activeConsultationId.value) {
+    toast.warning(`Aucune séance\nEnregistrez au moins un soin avant de clôturer.`, { autoClose: 3000 })
+    return
+  }
+  if (!confirm(`Clôturer la consultation et générer la facture (${consultationTotal.value.toFixed(2)} DT) ? La secrétaire sera notifiée pour l'encaissement.`)) {
+    return
+  }
+
+  finalizing.value = true
+  try {
+    const res = await api.post(`/consultations/${activeConsultationId.value}/finalize`)
+    const facture = res.data
+    toast.success(`Consultation clôturée\nFacture ${facture.numeroFacture} — ${Number(facture.montantTotal).toFixed(2)} DT envoyée à la caisse.`, { autoClose: 5000 })
+    await fetchWaitingRoom()
+  } catch (error) {
+    console.error('Failed to finalize consultation', error)
+    const msg = error?.response?.data || "Impossible de clôturer la consultation."
+    toast.error(`Erreur\n${msg}`, { autoClose: 5000 })
+  } finally {
+    finalizing.value = false
+  }
+}
+
+const selectWaitingPatient = (entry) => {
+  selectedPatientId.value = entry.patientId
 }
 
 const handleAddSoin = async () => {
   if (!selectedTooth.value) {
-    toast.add({ severity: 'warn', summary: 'Dent requise', detail: 'Veuillez cliquer sur une dent du schéma.', life: 3000 })
+    toast.warning(`Dent requise\nVeuillez cliquer sur une dent du schéma.`, { autoClose: 3000 })
     return
   }
   if (!newSoinForm.value.acteMedicalId) {
-    toast.add({ severity: 'warn', summary: 'Acte requis', detail: 'Veuillez sélectionner un acte médical.', life: 3000 })
+    toast.warning(`Acte requis\nVeuillez sélectionner un acte médical.`, { autoClose: 3000 })
     return
   }
 
@@ -176,12 +349,12 @@ const handleAddSoin = async () => {
 
   try {
     await api.post('/soins-effectues', payload)
-    toast.add({ severity: 'success', summary: 'Soin enregistré', detail: 'L\'acte a été posé avec succès.', life: 3000 })
+    toast.success(`Soin enregistré\nL'acte a été posé avec succès.`, { autoClose: 3000 })
     newSoinForm.value.notes = ''
     fetchPatientClinicalData(selectedPatientId.value)
   } catch (error) {
     console.error("Failed to save soin", error)
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\'enregistrer le soin.', life: 5000 })
+    toast.error(`Erreur\nImpossible d'enregistrer le soin.`, { autoClose: 5000 })
   } finally {
     savingSoin.value = false
   }
@@ -190,7 +363,7 @@ const handleAddSoin = async () => {
 const saveNotesCliniques = async () => {
   if (!patient.value) return
   if (!notesCliniques.value.trim()) {
-    toast.add({ severity: 'warn', summary: 'Notes vides', detail: 'Saisissez des remarques cliniques.', life: 3000 })
+    toast.warning(`Notes vides\nSaisissez des remarques cliniques.`, { autoClose: 3000 })
     return
   }
 
@@ -203,12 +376,12 @@ const saveNotesCliniques = async () => {
       dentisteId: authStore.user?.id || 1
     }
     await api.post('/consultations', payload)
-    toast.add({ severity: 'success', summary: 'Remarques enregistrées', detail: 'Le journal clinique a été mis à jour.', life: 3000 })
+    toast.success(`Remarques enregistrées\nLe journal clinique a été mis à jour.`, { autoClose: 3000 })
     notesCliniques.value = ''
     fetchPatientClinicalData(selectedPatientId.value)
   } catch (error) {
     console.error("Failed to save consultation note", error)
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de sauvegarder le compte-rendu.', life: 4000 })
+    toast.error(`Erreur\nImpossible de sauvegarder le compte-rendu.`, { autoClose: 4000 })
   } finally {
     savingNotes.value = false
   }
@@ -217,7 +390,7 @@ const saveNotesCliniques = async () => {
 const savePrescription = async () => {
   if (!patient.value) return
   if (!prescriptionText.value.trim()) {
-    toast.add({ severity: 'warn', summary: 'Prescription vide', detail: 'Veuillez rédiger un traitement.', life: 3000 })
+    toast.warning(`Prescription vide\nVeuillez rédiger un traitement.`, { autoClose: 3000 })
     return
   }
 
@@ -229,11 +402,11 @@ const savePrescription = async () => {
       patientId: patient.value.id
     }
     await api.post('/ordonnances', payload)
-    toast.add({ severity: 'success', summary: 'Ordonnance enregistrée', detail: 'Sauvegardée dans l\'historique du patient.', life: 3000 })
+    toast.success(`Ordonnance enregistrée\nSauvegardée dans l'historique du patient.`, { autoClose: 3000 })
     fetchPatientClinicalData(selectedPatientId.value)
   } catch (error) {
     console.error("Failed to save ordonnance", error)
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\'enregistrer l\'ordonnance.', life: 4000 })
+    toast.error(`Erreur\nImpossible d'enregistrer l'ordonnance.`, { autoClose: 4000 })
   } finally {
     savingPrescription.value = false
   }
@@ -318,19 +491,17 @@ watch(selectedPatientId, (newId) => {
 
 onMounted(() => {
   fetchPatients()
+  fetchArticles()
+  fetchWaitingRoom()
 
   // Real-time integration
   signalRService.startConnection()
   signalRService.on('NotifyPatientArrived', (payload) => {
     if (authStore.user && payload.doctorId === authStore.user.id) {
-      toast.add({
-        severity: 'info',
-        summary: 'Nouveau Patient Arrivé !',
-        detail: `Le patient ${payload.patientName} vient d'arriver en salle d'attente. (${payload.motif || 'Aucun motif précisé'})`,
-        life: 8000
-      })
-      
-      // Auto-switch to the new patient
+      toast.info(`Nouveau Patient Arrivé !\nLe patient ${payload.patientName} vient d'arriver en salle d'attente. (${payload.motif || 'Aucun motif précisé'})`, { autoClose: 8000 })
+
+      // Refresh the queue and auto-switch to the new patient
+      fetchWaitingRoom()
       selectedPatientId.value = payload.patientId
     }
   })
@@ -363,6 +534,48 @@ onUnmounted(() => {
           :loading="loadingPatients"
           class="w-full text-xs font-semibold"
         />
+      </div>
+    </div>
+
+    <!-- Waiting room: patients checked-in by the secretary for this doctor -->
+    <div v-if="waitingRoom.length > 0" class="bg-white rounded-2xl border border-slate-200/65 shadow-sm p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+          <i class="pi pi-users text-emerald-500"></i>
+          <span>Salle d'attente ({{ waitingRoom.length }})</span>
+        </h3>
+        <button
+          @click="fetchWaitingRoom"
+          class="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
+        >
+          <i class="pi pi-refresh text-xs" :class="{ 'pi-spin': loadingWaiting }"></i>
+        </button>
+      </div>
+      <div class="flex gap-3 overflow-x-auto pb-1">
+        <button
+          v-for="entry in waitingRoom"
+          :key="entry.appointmentId"
+          @click="selectWaitingPatient(entry)"
+          class="text-left min-w-[220px] p-3 rounded-xl border transition-all cursor-pointer shadow-sm"
+          :class="selectedPatientId === entry.patientId
+            ? 'bg-sky-50 border-sky-300 ring-2 ring-sky-200'
+            : 'bg-white border-slate-200 hover:bg-slate-50'"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-900 truncate">{{ entry.patientNomComplet }}</span>
+            <span class="text-[9px] font-bold text-slate-400">
+              {{ entry.arrivalTime ? new Date(entry.arrivalTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '' }}
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-500 font-semibold mt-1 truncate">{{ entry.motif || 'Consultation' }}</p>
+          <p class="text-[9px] text-slate-400 mt-1.5 truncate">
+            <i class="pi pi-history mr-1"></i>
+            <span v-if="entry.lastVisitDate">
+              Dernière visite : {{ new Date(entry.lastVisitDate).toLocaleDateString('fr-FR') }}
+            </span>
+            <span v-else>Nouveau patient</span>
+          </p>
+        </button>
       </div>
     </div>
 
@@ -659,7 +872,111 @@ onUnmounted(() => {
 
         <!-- Right 1 col: Notes journal & Prescription form -->
         <div class="space-y-6">
-          
+
+          <!-- Clôture & Facturation -->
+          <div class="bg-slate-900 rounded-xl shadow-sm p-6 space-y-4 text-white">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider flex items-center gap-2">
+                <i class="pi pi-flag-fill text-emerald-400"></i>
+                <span>Clôture de la séance</span>
+              </h3>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Total des soins</p>
+                <p class="text-2xl font-extrabold tracking-tight">{{ consultationTotal.toFixed(2) }} <span class="text-sm text-slate-400">DT</span></p>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold">{{ consommations.length }} article(s) consommé(s)</span>
+            </div>
+            <button
+              @click="handleFinalize"
+              :disabled="finalizing || consultationTotal <= 0"
+              class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <i v-if="finalizing" class="pi pi-spin pi-spinner"></i>
+              <i v-else class="pi pi-send"></i>
+              <span>Terminer & envoyer en caisse</span>
+            </button>
+            <p class="text-[10px] text-slate-400 leading-normal text-center">
+              Génère une facture unique et notifie la secrétaire du montant à encaisser.
+            </p>
+          </div>
+
+          <!-- Articles consommés (stock) -->
+          <div class="bg-white rounded-xl border border-slate-200/65 shadow-sm p-6 space-y-4">
+            <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">
+              <i class="pi pi-box text-amber-500"></i>
+              <span>Articles consommés</span>
+            </h3>
+
+            <!-- Recipe suggestions for the selected act -->
+            <div v-if="recetteSuggestions.length > 0" class="flex flex-wrap gap-1.5">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide w-full">Suggestions (acte sélectionné)</span>
+              <button
+                v-for="sug in recetteSuggestions"
+                :key="sug.id"
+                @click="useSuggestion(sug)"
+                class="px-2 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+              >
+                + {{ sug.articleNom || ('Article #' + sug.articleId) }} ×{{ sug.quantiteRequise }}
+              </button>
+            </div>
+
+            <!-- Add form -->
+            <div class="grid grid-cols-1 gap-3">
+              <Dropdown
+                v-model="newConsommationForm.articleId"
+                :options="articleOptions"
+                optionLabel="label"
+                optionValue="id"
+                filter
+                placeholder="Choisir un article du stock"
+                class="w-full text-xs font-semibold"
+              />
+              <div class="flex gap-2">
+                <input
+                  v-model.number="newConsommationForm.quantite"
+                  type="number"
+                  min="1"
+                  class="w-24 py-2 px-3 text-xs bg-slate-50 border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-lg outline-none text-slate-800 font-semibold"
+                />
+                <button
+                  @click="handleAddConsommation"
+                  :disabled="savingConsommation"
+                  class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <i v-if="savingConsommation" class="pi pi-spin pi-spinner text-xs"></i>
+                  <i v-else class="pi pi-plus text-xs"></i>
+                  <span>Consommer</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Consumed list -->
+            <div class="space-y-2 pt-2 border-t border-slate-100 max-h-48 overflow-y-auto">
+              <div v-if="consommations.length === 0" class="text-center text-slate-400 text-[11px] font-medium py-4 italic">
+                Aucun article consommé pour cette séance.
+              </div>
+              <div
+                v-for="c in consommations"
+                :key="c.id"
+                class="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-[11px]"
+              >
+                <div class="font-semibold text-slate-700">
+                  {{ c.articleNom }}
+                  <span class="text-slate-400 font-bold">×{{ c.quantite }} {{ c.articleUnite || '' }}</span>
+                </div>
+                <button
+                  @click="handleDeleteConsommation(c)"
+                  class="w-6 h-6 rounded-md hover:bg-rose-50 text-rose-500 flex items-center justify-center transition-colors cursor-pointer"
+                  title="Annuler (remet en stock)"
+                >
+                  <i class="pi pi-trash text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Journal des Notes Cliniques -->
           <div class="bg-white rounded-xl border border-slate-200/65 shadow-sm p-6 space-y-4">
             <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">

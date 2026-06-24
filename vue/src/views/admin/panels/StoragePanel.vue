@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const isOpen = ref(false)
 const isEditing = ref(false)
 const loading = ref(false)
@@ -31,12 +31,7 @@ const fetchStorageSettings = async () => {
     }
   } catch (error) {
     console.error('[API Error] fetchStorageSettings failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les paramètres de stockage.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger les paramètres de stockage.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -63,22 +58,12 @@ const saveStorageSettings = async () => {
     }
     
     await api.post('/options/storage', payload)
-    toast.add({
-      severity: 'success',
-      summary: 'Succès',
-      detail: 'Configuration du stockage mise à jour avec succès.',
-      life: 3000
-    })
+    toast.success(`Succès\nConfiguration du stockage mise à jour avec succès.`, { autoClose: 3000 })
     isEditing.value = false
     fetchStorageSettings()
   } catch (error) {
     console.error('[API Error] saveStorageSettings failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de sauvegarde',
-      detail: 'Impossible de sauvegarder les paramètres de stockage.',
-      life: 5000
-    })
+    toast.error(`Erreur de sauvegarde\nImpossible de sauvegarder les paramètres de stockage.`, { autoClose: 5000 })
   } finally {
     saving.value = false
   }

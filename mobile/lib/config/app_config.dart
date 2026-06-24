@@ -6,6 +6,6 @@ class AppConfig {
   }
 
   static String getSignalRHubUrl() {
-    return dotenv.env['SIGNALR_HUB_URL'] ?? 'http://10.0.2.2:5555/notif';
+    return dotenv.env['SIGNALR_HUB_URL'] ?? 'http://10.0.2.2:5555/hubs/notif';
   }
 }

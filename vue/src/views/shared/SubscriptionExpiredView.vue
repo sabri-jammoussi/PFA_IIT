@@ -2,31 +2,21 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
 const authStore = useAuthStore()
 const router = useRouter()
-const toast = useToast()
+
 const reactivating = ref(false)
 
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    toast.add({
-      severity: 'info',
-      summary: 'Déconnexion',
-      detail: 'Session fermée avec succès.',
-      life: 3000
-    })
+    toast.info(`Déconnexion\nSession fermée avec succès.`, { autoClose: 3000 })
     router.push('/login')
   } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Erreur lors de la déconnexion.',
-      life: 3000
-    })
+    toast.error(`Erreur\nErreur lors de la déconnexion.`, { autoClose: 3000 })
   }
 }
 
@@ -36,12 +26,7 @@ const handleReactivate = async () => {
     console.log('[API Request] POST /cabinet/subscription/reactivate')
     await api.post('/cabinet/subscription/reactivate')
     
-    toast.add({
-      severity: 'success',
-      summary: 'Abonnement Activé',
-      detail: 'Le paiement de la licence a été validé. Redirection vers votre portail...',
-      life: 3500
-    })
+    toast.success(`Abonnement Activé\nLe paiement de la licence a été validé. Redirection vers votre portail...`, { autoClose: 3500 })
 
     // Brief delay to let the toast render
     setTimeout(() => {
@@ -56,12 +41,7 @@ const handleReactivate = async () => {
     }, 2500)
   } catch (error) {
     console.error('[API Error] handleReactivate failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Échec de la transaction',
-      detail: 'Impossible de traiter le règlement. Contactez notre support.',
-      life: 5000
-    })
+    toast.error(`Échec de la transaction\nImpossible de traiter le règlement. Contactez notre support.`, { autoClose: 5000 })
   } finally {
     reactivating.value = false
   }

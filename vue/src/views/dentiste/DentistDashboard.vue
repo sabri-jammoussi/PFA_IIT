@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
 const authStore = useAuthStore()
-const toast = useToast()
+
 const loading = ref(false)
 
 const todaysAppCount = ref(0)
@@ -73,12 +73,7 @@ const fetchDentistDashboard = async () => {
     }
   } catch (err) {
     console.error('[API Error] fetchDentistDashboard failed:', err)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de récupérer les données du tableau de bord praticien.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de récupérer les données du tableau de bord praticien.`, { autoClose: 5000 })
     nextPatientName.value = 'Aucun patient attendu'
     nextPatientTime.value = '--:--'
     nextPatientMotif.value = 'Pas de motif'

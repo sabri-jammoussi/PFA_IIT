@@ -2,12 +2,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const toast = useToast()
+
 
 const loading = ref(false)
 const appointments = ref([])
@@ -63,12 +63,7 @@ const fetchDashboardData = async () => {
     totalRevenue.value = facturesList.reduce((sum, f) => sum + (f.montantPaye || 0), 0)
   } catch (error) {
     console.error('[API Error] fetchDashboardData failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de récupérer les données du tableau de bord.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de récupérer les données du tableau de bord.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -96,12 +91,7 @@ const updateAppointmentStatus = async (appId, status) => {
     const appointment = appointments.value.find(a => a.id === appId)
     if (appointment) {
       appointment.statut = status
-      toast.add({
-        severity: 'success',
-        summary: 'Rendez-vous mis à jour',
-        detail: `Le statut a été changé en '${status}'.`,
-        life: 3000
-      })
+      toast.success(`Rendez-vous mis à jour\nLe statut a été changé en '${status}'.`, { autoClose: 3000 })
 
       console.log(`[API Request] PUT /rendezvous/${appId} | New Status: ${status}`)
       const res = await api.put(`/rendezvous/${appId}`, {
@@ -112,12 +102,7 @@ const updateAppointmentStatus = async (appId, status) => {
     }
   } catch (error) {
     console.error('[API Error] updateAppointmentStatus failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de mise à jour',
-      detail: 'Impossible de mettre à jour le statut du rendez-vous.',
-      life: 5000
-    })
+    toast.error(`Erreur de mise à jour\nImpossible de mettre à jour le statut du rendez-vous.`, { autoClose: 5000 })
   }
 }
 

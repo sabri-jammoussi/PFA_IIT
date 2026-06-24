@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-const toast = useToast()
+
 const loading = ref(false)
 const processing = ref(false)
 const factures = ref([])
@@ -31,12 +31,7 @@ const fetchFactures = async () => {
     factures.value = res.data?.items || res.data || []
   } catch (error) {
     console.error('[API Error] fetchFactures failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de récupérer les factures. Vérifiez la connexion au serveur.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de récupérer les factures. Vérifiez la connexion au serveur.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -57,13 +52,13 @@ const closePaymentModal = () => {
 const handlePayInvoice = async () => {
   if (!selectedFacture.value) return
   if (payForm.value.montant <= 0) {
-    toast.add({ severity: 'warn', summary: 'Montant invalide', detail: 'Veuillez saisir un montant supérieur à 0 DT.', life: 3000 })
+    toast.warning(`Montant invalide\nVeuillez saisir un montant supérieur à 0 DT.`, { autoClose: 3000 })
     return
   }
 
   const remaining = selectedFacture.value.montantTotal - selectedFacture.value.montantPaye
   if (payForm.value.montant > remaining) {
-    toast.add({ severity: 'warn', summary: 'Montant excessif', detail: `Le montant ne peut dépasser le reste à payer (${remaining} DT).`, life: 3000 })
+    toast.warning(`Montant excessif\nLe montant ne peut dépasser le reste à payer (${remaining} DT).`, { autoClose: 3000 })
     return
   }
 
@@ -80,24 +75,14 @@ const handlePayInvoice = async () => {
     console.log(`[API Response] POST /paiements | Status: ${res.status}`, res.data)
     
     const isFull = payForm.value.montant === remaining
-    toast.add({
-      severity: 'success',
-      summary: 'Règlement enregistré',
-      detail: isFull 
+    toast.success(`Règlement enregistré\n${isFull 
         ? `La facture ${selectedFacture.value.numeroFacture} a été soldée.` 
-        : `Paiement partiel enregistré pour la facture ${selectedFacture.value.numeroFacture}.`,
-      life: 3000
-    })
+        : `Paiement partiel enregistré pour la facture ${selectedFacture.value.numeroFacture}.`}`, { autoClose: 3000 })
     closePaymentModal()
     fetchFactures()
   } catch (error) {
     console.error('[API Error] payInvoice failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de paiement',
-      detail: `Impossible d'enregistrer le règlement de la facture ${selectedFacture.value.numeroFacture}.`,
-      life: 5000
-    })
+    toast.error(`Erreur de paiement\nImpossible d'enregistrer le règlement de la facture ${selectedFacture.value.numeroFacture}.`, { autoClose: 5000 })
   } finally {
     processing.value = false
   }

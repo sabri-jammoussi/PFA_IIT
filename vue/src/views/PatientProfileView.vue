@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
+
 const authStore = useAuthStore()
 
 const patientId = parseInt(route.params.id)
@@ -105,12 +105,7 @@ const fetchProfileData = async () => {
     ordonnances.value = ordonnancesRes.data?.items || ordonnancesRes.data || []
   } catch (error) {
     console.error('[API Error] fetchProfileData failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de charger le dossier clinique du patient.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de charger le dossier clinique du patient.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -125,11 +120,11 @@ const onActeSelect = () => {
 
 const handleAddSoin = async () => {
   if (!selectedTooth.value) {
-    toast.add({ severity: 'warn', summary: 'Sélectionner une dent', detail: 'Veuillez cliquer sur une dent du schéma avant d\'enregistrer.', life: 3000 })
+    toast.warning(`Sélectionner une dent\nVeuillez cliquer sur une dent du schéma avant d'enregistrer.`, { autoClose: 3000 })
     return
   }
   if (!newSoinForm.value.acteMedicalId) {
-    toast.add({ severity: 'warn', summary: 'Acte requis', detail: 'Veuillez sélectionner un acte médical.', life: 3000 })
+    toast.warning(`Acte requis\nVeuillez sélectionner un acte médical.`, { autoClose: 3000 })
     return
   }
 
@@ -177,18 +172,13 @@ const handleAddSoin = async () => {
     console.log(`[API Request] POST /soins-effectues | Payload:`, payload)
     const res = await api.post('/soins-effectues', payload)
     console.log(`[API Response] POST /soins-effectues | Status: ${res.status}`, res.data)
-    toast.add({ severity: 'success', summary: 'Soin enregistré', detail: 'Acte ajouté à la fiche clinique.', life: 3000 })
+    toast.success(`Soin enregistré\nActe ajouté à la fiche clinique.`, { autoClose: 3000 })
     fetchProfileData()
     // Reset form notes
     newSoinForm.value.notes = ''
   } catch (error) {
     console.error('[API Error] handleAddSoin failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur d\'enregistrement',
-      detail: 'Impossible d\'enregistrer l\'acte clinique sur la dent ' + selectedTooth.value,
-      life: 5000
-    })
+    toast.error(`Erreur d'enregistrement\n${'Impossible d\'enregistrer l\'acte clinique sur la dent ' + selectedTooth.value}`, { autoClose: 5000 })
   } finally {
     savingSoin.value = false
   }

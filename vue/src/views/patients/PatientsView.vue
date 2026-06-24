@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import PatientAddDialog from './PatientAddDialog.vue'
 import PatientUpdateDialog from './PatientUpdateDialog.vue'
@@ -9,7 +9,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
-const toast = useToast()
+
 
 const loading = ref(false)
 const patients = ref([])
@@ -45,12 +45,7 @@ const fetchPatients = async () => {
     totalCount.value = response.data?.totalCount || patients.value.length
   } catch (error) {
     console.error('[API Error] fetchPatients failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de chargement',
-      detail: 'Impossible de charger la liste des patients.',
-      life: 5000
-    })
+    toast.error(`Erreur de chargement\nImpossible de charger la liste des patients.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -64,22 +59,12 @@ const handleCreatePatient = async (formData) => {
   try {
     const res = await api.post(url, patientData)
     console.log(`[API Response] POST ${url} | Status: ${res.status}`, res.data)
-    toast.add({ 
-      severity: 'success', 
-      summary: invite ? 'Patient créé & invité' : 'Patient créé', 
-      detail: invite ? 'Le patient a été créé et l\'invitation e-mail a été envoyée.' : 'La nouvelle fiche patient a été ajoutée.', 
-      life: 3000 
-    })
+    toast.success(`${invite ? 'Patient créé & invité' : 'Patient créé'}\n${invite ? 'Le patient a été créé et l\'invitation e-mail a été envoyée.' : 'La nouvelle fiche patient a été ajoutée.'}`, { autoClose: 3000 })
     showAddDialog.value = false
     fetchPatients()
   } catch (error) {
     console.error(`[API Error] handleCreatePatient failed:`, error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible d\'enregistrer la fiche patient.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible d'enregistrer la fiche patient.`, { autoClose: 5000 })
   } finally {
     savingPatient.value = false
   }
@@ -92,17 +77,12 @@ const handleUpdatePatient = async (formData) => {
   try {
     const res = await api.put(`/patients/${id}`, formData)
     console.log(`[API Response] PUT /patients/${id} | Status: ${res.status}`)
-    toast.add({ severity: 'success', summary: 'Patient mis à jour', detail: 'Les modifications ont été enregistrées.', life: 3000 })
+    toast.success(`Patient mis à jour\nLes modifications ont été enregistrées.`, { autoClose: 3000 })
     showUpdateDialog.value = false
     fetchPatients()
   } catch (error) {
     console.error('[API Error] handleUpdatePatient failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur de mise à jour',
-      detail: 'Impossible de mettre à jour la fiche patient.',
-      life: 5000
-    })
+    toast.error(`Erreur de mise à jour\nImpossible de mettre à jour la fiche patient.`, { autoClose: 5000 })
   } finally {
     savingPatient.value = false
   }
@@ -127,16 +107,11 @@ const confirmArchive = async () => {
     console.log(`[API Request] DELETE /patients/${id}`)
     const res = await api.delete(`/patients/${id}`)
     console.log(`[API Response] DELETE /patients/${id} | Status: ${res.status}`)
-    toast.add({ severity: 'success', summary: 'Succès', detail: 'Le dossier patient a été archivé.', life: 3000 })
+    toast.success(`Succès\nLe dossier patient a été archivé.`, { autoClose: 3000 })
     fetchPatients()
   } catch (error) {
     console.error('[API Error] confirmArchive failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur d\'archivage',
-      detail: 'Impossible d\'archiver ce dossier patient.',
-      life: 5000
-    })
+    toast.error(`Erreur d'archivage\nImpossible d'archiver ce dossier patient.`, { autoClose: 5000 })
   } finally {
     patientIdToArchive.value = null
   }

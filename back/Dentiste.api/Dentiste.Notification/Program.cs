@@ -63,10 +63,12 @@ namespace Dentiste.Notification
             builder.Services.AddTransient<RendezVousUsersProvider>();
             builder.Services.AddTransient<PaiementsUsersProvider>();
             builder.Services.AddTransient<PatientsUsersProvider>();
+            builder.Services.AddTransient<Dentiste.Notification.Features.Consultations.ConsultationsUsersProvider>();
 
             // ── Keyed Event Mappers ──
             builder.Services.AddKeyedTransient<IEventCommandMapper, AddRendezVousMapper>(NotificationEventCommand.AddRendezVous);
             builder.Services.AddKeyedTransient<IEventCommandMapper, AddPaiementMapper>(NotificationEventCommand.AddPaiement);
+            builder.Services.AddKeyedTransient<IEventCommandMapper, FinalizeConsultationMapper>(NotificationEventCommand.FinalizeConsultation);
             builder.Services.AddKeyedTransient<IEventCommandMapper, UpdatePatientMapper>(NotificationEventCommand.UpdatePatient);
             builder.Services.AddKeyedTransient<IEventCommandMapper, InvitePatientMapper>(NotificationEventCommand.InvitePatient);
             builder.Services.AddKeyedTransient<IEventCommandMapper, RegisterClinicMapper>("register-clinic");

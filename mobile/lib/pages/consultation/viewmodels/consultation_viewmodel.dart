@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:dentiflow/core/services/user_claims_service.dart';
+import 'package:dentiflow/pages/stock/models/stock_model.dart';
+import 'package:dentiflow/pages/stock/services/stock_service.dart';
 import '../models/consultation_model.dart';
 import '../services/consultation_service.dart';
 
@@ -17,8 +19,54 @@ class ConsultationViewModel extends GetxController {
   final RxList<Treatment> treatments = <Treatment>[].obs;
   final RxList<Prescription> prescriptions = <Prescription>[].obs;
 
+  // Stock consumption + invoicing
+  final RxList<ConsommationArticle> consommations = <ConsommationArticle>[].obs;
+  final RxList<StockItem> articles = <StockItem>[].obs;
+  final RxList<RecetteSuggestion> recetteSuggestions = <RecetteSuggestion>[].obs;
+  final RxBool finalizing = false.obs;
+
+  // Waiting room
+  final RxList<WaitingEntry> waitingRoom = <WaitingEntry>[].obs;
+  final RxBool loadingWaiting = false.obs;
+
   final RxBool isLoading = false.obs;
   final RxInt selectedTooth = (-1).obs;
+
+  Future<void> loadWaitingRoom() async {
+    loadingWaiting.value = true;
+    try {
+      final int dentisteId = await _currentDentisteId();
+      waitingRoom.assignAll(await ConsultationService.getWaitingRoom(dentisteId));
+    } catch (_) {
+    } finally {
+      loadingWaiting.value = false;
+    }
+  }
+
+  /// Clears the active patient to return to the waiting-room list.
+  void clearSelection() {
+    selectedPatientId.value = 0;
+    patient.value = null;
+    consultations.clear();
+    treatments.clear();
+    prescriptions.clear();
+    consommations.clear();
+    recetteSuggestions.clear();
+    selectedTooth.value = -1;
+  }
+
+  /// Most recent consultation = the session currently being worked on.
+  int get activeConsultationId =>
+      consultations.isNotEmpty ? consultations.first.id : 0;
+
+  /// Total of the active visit's treatments = amount the secretary will collect.
+  double get consultationTotal {
+    final int cid = activeConsultationId;
+    if (cid == 0) return 0;
+    return treatments
+        .where((t) => t.consultationId == cid)
+        .fold(0.0, (sum, t) => sum + t.prixApplique);
+  }
 
   void selectTooth(int toothNumber) {
     selectedTooth.value =
@@ -57,9 +105,72 @@ class ConsultationViewModel extends GetxController {
       consultations.assignAll(results[1] as List<Consultation>);
       treatments.assignAll(results[2] as List<Treatment>);
       prescriptions.assignAll(results[3] as List<Prescription>);
+      recetteSuggestions.clear();
+      await Future.wait([
+        loadArticles(),
+        loadConsommations(),
+      ]);
     } catch (_) {
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> loadArticles() async {
+    try {
+      articles.assignAll(await StockService.getItems());
+    } catch (_) {}
+  }
+
+  Future<void> loadConsommations() async {
+    final int cid = activeConsultationId;
+    if (cid == 0) {
+      consommations.clear();
+      return;
+    }
+    try {
+      consommations.assignAll(await ConsultationService.getConsommations(cid));
+    } catch (_) {
+      consommations.clear();
+    }
+  }
+
+  /// Loads the editable consumable suggestions for the selected act.
+  Future<void> loadRecette(int acteMedicalId) async {
+    try {
+      recetteSuggestions.assignAll(await ConsultationService.getRecette(acteMedicalId));
+    } catch (_) {
+      recetteSuggestions.clear();
+    }
+  }
+
+  Future<void> addConsommation({required int articleId, required int quantite}) async {
+    final int consultationId =
+        await _ensureActiveConsultation('Séance de soins');
+    await ConsultationService.addConsommation(
+      consultationId: consultationId,
+      articleId: articleId,
+      quantite: quantite,
+    );
+    // Refresh consultations (in case one was just created) then dependent lists.
+    await loadForPatient(selectedPatientId.value);
+  }
+
+  Future<void> deleteConsommation(int id) async {
+    await ConsultationService.deleteConsommation(id);
+    await Future.wait([loadConsommations(), loadArticles()]);
+  }
+
+  /// Closes the consultation: generates one invoice and notifies the secretary.
+  /// Returns the created invoice payload, or null on failure / nothing to bill.
+  Future<Map<String, dynamic>?> finalize() async {
+    final int cid = activeConsultationId;
+    if (cid == 0) return null;
+    finalizing.value = true;
+    try {
+      return await ConsultationService.finalizeConsultation(cid);
+    } finally {
+      finalizing.value = false;
     }
   }
 

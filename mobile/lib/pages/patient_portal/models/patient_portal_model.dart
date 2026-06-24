@@ -173,6 +173,18 @@ class AppointmentSlot {
         dateTime: (j['dateTime'] ?? '') as String,
         isAvailable: (j['isAvailable'] ?? false) as bool,
       );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AppointmentSlot &&
+          runtimeType == other.runtimeType &&
+          time == other.time &&
+          dateTime == other.dateTime &&
+          isAvailable == other.isAvailable;
+
+  @override
+  int get hashCode => time.hashCode ^ dateTime.hashCode ^ isAvailable.hashCode;
 }
 
 // ─── Extended medical record with full lists ───────────────────────────────

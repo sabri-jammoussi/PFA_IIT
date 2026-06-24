@@ -24,7 +24,10 @@ class SignalRNotificationEvent {
       SignalRNotificationEvent(
         id: json['id']?.toString() ?? '',
         title: json['title']?.toString() ?? '',
-        description: json['description']?.toString() ?? '',
+        // Server payload uses "description"; tolerate a few aliases.
+        description: (json['description'] ?? json['note'] ?? json['message'])
+                ?.toString() ??
+            '',
         type: json['type']?.toString() ?? '',
         isSeen: json['isSeen'] == true,
       );
@@ -51,13 +54,18 @@ class SignalRService {
           .withAutomaticReconnect()
           .build();
 
-      _hubConnection!.on('ReceiveNotification', (List<Object?>? args) {
-        if (args != null && args.isNotEmpty && args[0] is Map<String, dynamic>) {
+      // The server pushes via INotificationHubClient.ReceiveMessage.
+      void handle(List<Object?>? args) {
+        if (args != null && args.isNotEmpty && args[0] is Map) {
           final event = SignalRNotificationEvent.fromJson(
-              args[0] as Map<String, dynamic>);
+              Map<String, dynamic>.from(args[0] as Map));
           notificationEventsStream.add(event);
         }
-      });
+      }
+
+      _hubConnection!.on('ReceiveMessage', handle);
+      // Keep the legacy name too, in case other emitters use it.
+      _hubConnection!.on('ReceiveNotification', handle);
 
       await _hubConnection!.start();
     } catch (e) {

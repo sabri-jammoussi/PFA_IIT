@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 
-const toast = useToast()
+
 const authStore = useAuthStore()
 const loading = ref(false)
 const users = ref([])
@@ -50,12 +50,7 @@ const fetchUsers = async () => {
     }
   } catch (error) {
     console.error('[API Error] fetchUsers failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger la liste des utilisateurs.',
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de charger la liste des utilisateurs.`, { autoClose: 5000 })
   } finally {
     loading.value = false
   }
@@ -121,12 +116,7 @@ const saveUser = async () => {
         password: form.value.password || undefined
       }
       await api.put(`/users/${form.value.id}`, payload)
-      toast.add({
-        severity: 'success',
-        summary: 'Utilisateur mis à jour',
-        detail: `L'utilisateur ${form.value.prenom} ${form.value.nom} a été modifié avec succès.`,
-        life: 3000
-      })
+      toast.success(`Utilisateur mis à jour\nL'utilisateur ${form.value.prenom} ${form.value.nom} a été modifié avec succès.`, { autoClose: 3000 })
     } else {
       const payload = {
         username: form.value.username,
@@ -138,24 +128,14 @@ const saveUser = async () => {
         cabinetId: authStore.isAdmin ? form.value.cabinetId || undefined : undefined
       }
       await api.post('/users', payload)
-      toast.add({
-        severity: 'success',
-        summary: 'Utilisateur créé',
-        detail: `Le compte de ${form.value.prenom} ${form.value.nom} a été créé avec succès.`,
-        life: 3000
-      })
+      toast.success(`Utilisateur créé\nLe compte de ${form.value.prenom} ${form.value.nom} a été créé avec succès.`, { autoClose: 3000 })
     }
     showDialog.value = false
     fetchUsers()
   } catch (error) {
     console.error('[API Error] saveUser failed:', error)
     const errorMsg = error.response?.data?.detail || "Une erreur s'est produite lors de l'enregistrement."
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: errorMsg,
-      life: 5000
-    })
+    toast.error(`Erreur\n${errorMsg}`, { autoClose: 5000 })
   } finally {
     saving.value = false
   }
@@ -168,21 +148,11 @@ const deleteUser = async (user) => {
   }
   try {
     await api.delete(`/users/${user.id}`)
-    toast.add({
-      severity: 'success',
-      summary: 'Utilisateur supprimé',
-      detail: `L'utilisateur ${user.prenom} ${user.nom} a été supprimé.`,
-      life: 3000
-    })
+    toast.success(`Utilisateur supprimé\nL'utilisateur ${user.prenom} ${user.nom} a été supprimé.`, { autoClose: 3000 })
     fetchUsers()
   } catch (error) {
     console.error('[API Error] deleteUser failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible de supprimer cet utilisateur. Il est possible qu'il soit lié à des données cliniques (rendez-vous, consultations).",
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de supprimer cet utilisateur. Il est possible qu'il soit lié à des données cliniques (rendez-vous, consultations).`, { autoClose: 5000 })
   }
 }
 
@@ -234,21 +204,11 @@ const toggleUserStatus = async (user) => {
     }
     await api.put(`/users/${user.id}`, payload)
     
-    toast.add({
-      severity: 'success',
-      summary: 'Statut mis à jour',
-      detail: `Le compte de ${user.prenom} ${user.nom} a été ${user.isActive ? 'activé' : 'désactivé'}.`,
-      life: 3000
-    })
+    toast.success(`Statut mis à jour\nLe compte de ${user.prenom} ${user.nom} a été ${user.isActive ? 'activé' : 'désactivé'}.`, { autoClose: 3000 })
   } catch (error) {
     console.error('[API Error] toggleUserStatus failed:', error)
     user.isActive = !user.isActive // rollback
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible de modifier le statut de l'utilisateur.",
-      life: 5000
-    })
+    toast.error(`Erreur\nImpossible de modifier le statut de l'utilisateur.`, { autoClose: 5000 })
   }
 }
 </script>
