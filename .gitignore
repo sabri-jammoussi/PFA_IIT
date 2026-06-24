@@ -9,3 +9,10 @@ appsettings.Development.json
 **/bin/
 **/obj/
 logs/
+
+# Local generated report files & folders
+.report_build/
+*.docx
+*.rar
+*.zip
+*.sql
